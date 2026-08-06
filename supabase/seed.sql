@@ -1,0 +1,13 @@
+-- =============================================================================
+-- Seed de desarrollo local (`supabase db reset` lo ejecuta automaticamente).
+-- -----------------------------------------------------------------------------
+-- IMPORTANTE: no se insertan datos de dominio aqui.
+-- Todos los datos cuelgan de auth.users, y el usuario se crea via magic link.
+-- Sembrar filas con un UUID fijo reintroduciria el antipatron de "usuario
+-- hardcodeado" que la Fase 0 elimina explicitamente.
+--
+-- Flujo recomendado en local:
+--   1. supabase start
+--   2. npm run dev  ->  /login  ->  ingresar un email cualquiera
+--   3. abrir Inbucket (http://127.0.0.1:54324) y seguir el magic link
+-- =============================================================================
