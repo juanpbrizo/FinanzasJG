@@ -85,6 +85,14 @@ Para este estado del proyecto, aplicar en orden:
 8. `20260806000007_sincronizar_fondos_plantilla.sql`
 9. `20260806000008_fix_resumen_periodo_cartesiano.sql`
 10. `20260806000009_fix_trigger_fondos_mensuales.sql`
+11. `20260806000010_fix_movimientos_insert_403.sql`
+12. `20260806000011_fix_compras_cuotas_400_404.sql`
+
+## Correcciones recientes
+
+- Se corrigio el INSERT de gastos para adjuntar `usuario_id` y resolver el 403 en `movimientos`.
+- Se ajusto el flujo de compras en cuotas para evitar 400 por payload invalido y 404 en la vista de estado/proyeccion.
+- `npm run verify` pasa limpio con lint + build.
 
 ## Estructura (resumen)
 

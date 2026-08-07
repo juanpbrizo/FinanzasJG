@@ -34,13 +34,27 @@ export async function obtenerTarjeta(tarjetaId) {
 
 export async function crearTarjeta(payload) {
   const supabase = getSupabase()
-  const { nombre, limite_total, dia_cierre, dia_vencimiento } = payload
+  const nombre = payload.nombre?.trim()
+  const limite_total = Number(payload.limite_total)
+  const dia_cierre = parseInt(payload.dia_cierre, 10)
+  const dia_vencimiento = parseInt(payload.dia_vencimiento, 10)
 
-  if (!nombre || !limite_total || !dia_cierre || !dia_vencimiento) {
-    throw new Error('Campos requeridos: nombre, limite_total, dia_cierre, dia_vencimiento')
+  if (!nombre) throw new Error('El nombre de la tarjeta es obligatorio')
+  if (!Number.isFinite(limite_total) || limite_total < 0) {
+    throw new Error('El límite total debe ser un número mayor o igual a 0')
+  }
+  if (!Number.isInteger(dia_cierre) || dia_cierre < 1 || dia_cierre > 31) {
+    throw new Error('El día de cierre debe ser un entero entre 1 y 31')
+  }
+  if (!Number.isInteger(dia_vencimiento) || dia_vencimiento < 1 || dia_vencimiento > 31) {
+    throw new Error('El día de vencimiento debe ser un entero entre 1 y 31')
   }
 
-  const { data, error } = await supabase.from('tarjetas_credito').insert([payload]).select().single()
+  const { data, error } = await supabase
+    .from('tarjetas_credito')
+    .insert([{ nombre, limite_total, dia_cierre, dia_vencimiento }])
+    .select()
+    .single()
 
   if (error) throw error
   return data
@@ -70,12 +84,41 @@ export async function eliminarTarjeta(tarjetaId) {
 // COMPRAS EN CUOTAS (RPC y Queries)
 // ============================================================================
 
+const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const RE_FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/
+
+/**
+ * Registra una compra en N cuotas via RPC.
+ * El payload se normaliza a los tipos que espera la funcion de Postgres
+ * (uuid / numeric / integer / date) para evitar 400 Bad Request.
+ */
 export async function registrarCompraCuotas(payload) {
   const supabase = getSupabase()
-  const { tarjeta_id, descripcion, monto_total, cantidad_cuotas, fecha_compra, categoria_plantilla_id, es_monto_variable } = payload
 
-  if (!tarjeta_id || !descripcion || !monto_total || !cantidad_cuotas || !fecha_compra) {
-    throw new Error('Campos requeridos: tarjeta_id, descripcion, monto_total, cantidad_cuotas, fecha_compra')
+  const tarjeta_id = payload.tarjeta_id?.trim()
+  const categoria_plantilla_id = payload.categoria_plantilla_id?.trim() || null
+  const descripcion = payload.descripcion?.trim()
+  const monto_total = Number(payload.monto_total)
+  const cantidad_cuotas = parseInt(payload.cantidad_cuotas, 10)
+  const fecha_compra = payload.fecha_compra
+
+  if (!tarjeta_id || !RE_UUID.test(tarjeta_id)) {
+    throw new Error('Seleccioná una tarjeta válida')
+  }
+  if (!categoria_plantilla_id || !RE_UUID.test(categoria_plantilla_id)) {
+    throw new Error('Seleccioná la categoría del presupuesto donde se imputarán las cuotas')
+  }
+  if (!descripcion) {
+    throw new Error('La descripción es obligatoria')
+  }
+  if (!Number.isFinite(monto_total) || monto_total <= 0) {
+    throw new Error('El monto total debe ser un número mayor a 0')
+  }
+  if (!Number.isInteger(cantidad_cuotas) || cantidad_cuotas < 1) {
+    throw new Error('La cantidad de cuotas debe ser un entero mayor o igual a 1')
+  }
+  if (!fecha_compra || !RE_FECHA_ISO.test(fecha_compra)) {
+    throw new Error('La fecha de compra debe tener formato YYYY-MM-DD')
   }
 
   const { data, error } = await supabase.rpc('registrar_compra_cuotas', {
@@ -84,8 +127,8 @@ export async function registrarCompraCuotas(payload) {
     p_monto_total: monto_total,
     p_cantidad_cuotas: cantidad_cuotas,
     p_fecha_compra: fecha_compra,
-    p_categoria_plantilla_id: categoria_plantilla_id || null,
-    p_es_monto_variable: es_monto_variable || false,
+    p_categoria_plantilla_id: categoria_plantilla_id,
+    p_es_monto_variable: Boolean(payload.es_monto_variable),
   })
 
   if (error) throw error
@@ -216,14 +259,7 @@ export async function obtenerEstadoComprasCuotas(tarjetaId = null) {
     .order('compra_cuota_id', { ascending: false })
 
   if (tarjetaId) {
-    // Nota: La vista no tiene tarjeta_id directamente. Para filtrar por tarjeta,
-    // obtenemos las compras de la tarjeta primero.
-    const compras = await obtenerComprasCuotas(tarjetaId)
-    const compraIds = compras.map((c) => c.id)
-
-    if (compraIds.length === 0) return []
-
-    query = query.in('compra_cuota_id', compraIds)
+    query = query.eq('tarjeta_id', tarjetaId)
   }
 
   const { data, error } = await query

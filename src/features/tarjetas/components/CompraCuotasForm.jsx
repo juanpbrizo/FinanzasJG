@@ -42,13 +42,23 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
     e.preventDefault()
     setError('')
 
-    if (!tarjetaId || !descripcion || !montoTotal || !cantidadCuotas || !fechaCompra) {
+    if (!tarjetaId) {
+      setError('Seleccioná una tarjeta para registrar la compra')
+      return
+    }
+
+    if (!descripcion.trim() || !montoTotal || !cantidadCuotas || !fechaCompra) {
       setError('Todos los campos son obligatorios')
       return
     }
 
-    if (!categoriaId && categorias && categorias.length > 0) {
-      setError('Debes seleccionar una categoría')
+    // La RPC imputa cada cuota a una categoría del presupuesto: es obligatoria.
+    if (!categoriaId) {
+      setError(
+        categorias && categorias.length > 0
+          ? 'Debes seleccionar una categoría'
+          : 'No hay categorías en tu plantilla. Creá al menos una en Configuración antes de registrar compras en cuotas.'
+      )
       return
     }
 
@@ -60,11 +70,11 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
     try {
       await onSubmit({
         tarjeta_id: tarjetaId,
-        descripcion,
+        descripcion: descripcion.trim(),
         monto_total: parseFloat(montoTotal),
         cantidad_cuotas: parseInt(cantidadCuotas, 10),
         fecha_compra: fechaCompra,
-        categoria_plantilla_id: categoriaId || null,
+        categoria_plantilla_id: categoriaId,
         es_monto_variable: esMontVariable,
       })
 
@@ -77,7 +87,13 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
       setCategoriaId('')
       setEsMontVariable(false)
     } catch (err) {
-      setError(err.message || 'Error al registrar la compra')
+      console.error('Error al registrar compra:', {
+        message: err?.message,
+        details: err?.details,
+        hint: err?.hint,
+        code: err?.code,
+      })
+      setError(err?.message || 'Error al registrar la compra')
     }
   }
 

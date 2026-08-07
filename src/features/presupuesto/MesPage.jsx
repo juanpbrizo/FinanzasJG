@@ -56,6 +56,8 @@ export default function MesPage() {
     return <Navigate to={`/mes/${periodoActual()}`} replace />
   }
 
+  const estaCerrado = periodoData?.estado === 'cerrado'
+
   const handleInitialize = async () => {
     try {
       await inicializar.mutateAsync(periodo)
@@ -66,11 +68,35 @@ export default function MesPage() {
   }
 
   const handleCrearGasto = async (gastoData) => {
+    if (estaCerrado) {
+      setToast({
+        variant: 'error',
+        message: 'El período está cerrado: no se pueden registrar nuevos gastos.',
+      })
+      return false
+    }
+
     try {
       await crearGasto.mutateAsync(gastoData)
       setShowGastoModal(false)
+      setToast({ variant: 'success', message: 'Gasto registrado correctamente' })
+      return true
     } catch (error) {
-      console.error('Error al crear gasto:', error)
+      console.error('Error al crear gasto:', {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code,
+      })
+
+      const esPermiso = error?.code === '42501' || error?.status === 403
+      setToast({
+        variant: 'error',
+        message: esPermiso
+          ? 'No tenés permiso para registrar este gasto. Verificá que el período te pertenezca y no esté cerrado.'
+          : (error?.message ?? 'No se pudo registrar el gasto'),
+      })
+      return false
     }
   }
 
@@ -145,8 +171,6 @@ export default function MesPage() {
 
   // Obtener todas las categorias para el selector del gasto.
   const todasLasCategorias = fondos?.flatMap((fondo) => fondo.categorias_mensuales ?? []) ?? []
-
-  const estaCerrado = periodoData?.estado === 'cerrado'
 
   if (periodoLoading || fondosLoading) return <Spinner />
 

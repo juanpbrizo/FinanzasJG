@@ -167,6 +167,7 @@ export function useRegistrarCompraCuotas() {
       // Invalida listas de compras
       queryClient.invalidateQueries({ queryKey: ['compras_cuotas'] })
       queryClient.invalidateQueries({ queryKey: ['estado_compras'] })
+      queryClient.invalidateQueries({ queryKey: ['movimientos_compra'] })
 
       // Invalida disponible de la tarjeta
       if (variables.tarjeta_id) {

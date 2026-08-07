@@ -20,10 +20,12 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, categorias
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await onSubmit({
+    const creado = await onSubmit({
       ...formData,
       monto: parseFloat(formData.monto),
     })
+    // Si el guardado falla se conservan los datos para reintentar.
+    if (creado === false) return
     setFormData({
       monto: '',
       descripcion: '',

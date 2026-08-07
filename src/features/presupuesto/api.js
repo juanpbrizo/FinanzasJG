@@ -96,11 +96,50 @@ export async function actualizarFondoMensual(fondoId, payload) {
 
 /**
  * Registra un gasto (movimiento simple).
+ * El `usuario_id` se adjunta explicitamente: la policy RLS exige
+ * `usuario_id = auth.uid()` y omitirlo devuelve 403 Forbidden.
  * @param {object} payload - { categoria_mensual_id, descripcion, monto, fecha_transaccion, medio_pago }
  */
 export async function crearGasto(payload) {
   const supabase = getSupabase()
-  const { data, error } = await supabase.from('movimientos').insert([payload]).select()
+
+  const {
+    data: { user },
+    error: errorUsuario,
+  } = await supabase.auth.getUser()
+
+  if (errorUsuario) throw errorUsuario
+  if (!user) throw new Error('Sesión expirada. Volvé a iniciar sesión para registrar el gasto.')
+
+  const monto = Number(payload.monto)
+  const camposFaltantes = [
+    ['categoría', payload.categoria_mensual_id],
+    ['descripción', payload.descripcion?.trim()],
+    ['fecha', payload.fecha_transaccion],
+  ]
+    .filter(([, value]) => !value)
+    .map(([name]) => name)
+
+  if (camposFaltantes.length > 0) {
+    throw new Error(`Faltan datos obligatorios: ${camposFaltantes.join(', ')}.`)
+  }
+  if (!Number.isFinite(monto) || monto <= 0) {
+    throw new Error('El monto debe ser un número mayor a 0.')
+  }
+
+  const { data, error } = await supabase
+    .from('movimientos')
+    .insert([
+      {
+        usuario_id: user.id,
+        categoria_mensual_id: payload.categoria_mensual_id,
+        descripcion: payload.descripcion.trim(),
+        monto,
+        fecha_transaccion: payload.fecha_transaccion,
+        medio_pago: payload.medio_pago || 'efectivo',
+      },
+    ])
+    .select()
 
   if (error) throw error
   return data[0]
