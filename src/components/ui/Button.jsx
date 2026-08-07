@@ -9,9 +9,9 @@ const VARIANTS = {
 }
 
 const SIZES = {
-  sm: 'px-2.5 py-1.5 text-xs',
-  md: 'px-3.5 py-2 text-sm',
-  lg: 'px-4 py-3 text-base',
+  sm: 'px-3 py-2 text-xs min-h-[2.5rem]',
+  md: 'px-4 py-2.5 text-sm min-h-[2.75rem]',
+  lg: 'px-5 py-3 text-base min-h-[3rem]',
 }
 
 export default function Button({

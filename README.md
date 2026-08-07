@@ -5,9 +5,19 @@ Aplicacion web de finanzas personales con presupuesto mensual, fondos/categorias
 ## Stack
 
 - React 19 + Vite
-- Tailwind CSS
+- Tailwind CSS (Mobile-First Responsive Design)
 - TanStack Query
 - Supabase (Auth, PostgREST, PostgreSQL)
+
+## UX/UI Mobile-First
+
+La aplicación está optimizada para dispositivos móviles con:
+- **Bottom Navigation Bar** en móviles para acceso rápido con una mano
+- Formularios y modales con **full-screen en móviles** y botones táctiles (min-height 44px)
+- Inputs y selects con **text-base (16px)** para evitar zoom automático en iOS/Android
+- Tablas de proyección con **scroll horizontal suave** en pantallas pequeñas
+- Grids adaptables que colapsan de 2-3 columnas a 1 columna en mobile
+- Padding y márgenes ajustados para maximizar espacio útil en pantallas pequeñas (360px+)
 
 ## Funcionalidades principales
 
@@ -123,6 +133,14 @@ liquidan automaticamente por periodo al inicializar o sincronizar el mes.
   - Vista `v_resumen_tarjetas` actualizada con CTE para cálculo de comprometido (cuotas + suscripciones)
   - Migraciones idempotentes para aplicación repetible
 - Refactorizado UI: selector en cascada **Fondo → Categoría** en formularios de gastos y compras
+- **Optimización Mobile-First completa**:
+  - Bottom Navigation Bar en móviles para navegación con una mano
+  - Modales full-screen en móviles con scroll interno
+  - Inputs y selects con altura mínima de 44px (py-3) y text-base (16px) para evitar zoom
+  - Tablas de proyección con scroll horizontal en pantallas pequeñas
+  - Grids responsive: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+  - Padding adaptativo: px-4 py-4 sm:px-6 sm:py-8
+  - Botones con min-height para mejor área táctil (min-h-[2.5rem] a min-h-[3rem])
 - `npm run verify` pasa limpio con lint + build.
 
 ## Estructura (resumen)

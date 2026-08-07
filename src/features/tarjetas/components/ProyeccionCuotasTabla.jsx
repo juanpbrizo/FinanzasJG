@@ -27,18 +27,21 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
   const fechasOrdenadas = Object.keys(movimientosPorMes).sort()
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-slate-50">
-            <th className="px-4 py-2 text-left font-semibold text-slate-900">Mes</th>
-            <th className="px-4 py-2 text-left font-semibold text-slate-900">Descripción</th>
-            <th className="px-4 py-2 text-right font-semibold text-slate-900">Monto teórico</th>
-            <th className="px-4 py-2 text-right font-semibold text-slate-900">Monto real</th>
-            <th className="px-4 py-2 text-center font-semibold text-slate-900">Estado</th>
-            <th className="px-4 py-2 text-right font-semibold text-slate-900">Acciones</th>
-          </tr>
-        </thead>
+    <div className="-mx-4 sm:mx-0">
+      <div className="overflow-x-auto px-4 sm:px-0">
+        <div className="inline-block min-w-full align-middle">
+          <div className="overflow-hidden rounded-lg border border-slate-200">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50">
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold text-slate-900 whitespace-nowrap">Mes</th>
+                  <th className="px-3 sm:px-4 py-2 text-left font-semibold text-slate-900 min-w-[200px]">Descripción</th>
+                  <th className="px-3 sm:px-4 py-2 text-right font-semibold text-slate-900 whitespace-nowrap">Monto teórico</th>
+                  <th className="px-3 sm:px-4 py-2 text-right font-semibold text-slate-900 whitespace-nowrap">Monto real</th>
+                  <th className="px-3 sm:px-4 py-2 text-center font-semibold text-slate-900 whitespace-nowrap">Estado</th>
+                  <th className="px-3 sm:px-4 py-2 text-right font-semibold text-slate-900 whitespace-nowrap">Acciones</th>
+                </tr>
+              </thead>
         <tbody>
           {fechasOrdenadas.map((fecha) => {
             const cuotasDelMes = movimientosPorMes[fecha]
@@ -51,14 +54,14 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
             return (
               <Fragment key={fecha}>
                 <tr className="border-b bg-slate-50 font-semibold">
-                  <td colSpan="6" className="px-4 py-2 text-slate-900">
+                  <td colSpan="6" className="px-3 sm:px-4 py-2 text-slate-900">
                     {formatMonthLabel(fecha)}
                   </td>
                 </tr>
                 {cuotasDelMes.map((mov) => (
                   <tr key={mov.id} className="border-b hover:bg-slate-50">
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2 text-slate-700">
+                    <td className="px-3 sm:px-4 py-2"></td>
+                    <td className="px-3 sm:px-4 py-2 text-slate-700">
                       {mov.descripcion}
                       {mov.numero_cuota && mov.total_cuotas ? (
                         <span className="ml-2 text-xs text-slate-500">
@@ -76,15 +79,15 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-600">
+                    <td className="px-3 sm:px-4 py-2 text-right text-slate-600 whitespace-nowrap">
                       {formatCurrency(mov.monto_teorico || mov.monto)}
                     </td>
-                    <td className="px-4 py-2 text-right font-medium text-slate-900">
+                    <td className="px-3 sm:px-4 py-2 text-right font-medium text-slate-900 whitespace-nowrap">
                       {formatCurrency(mov.monto)}
                     </td>
-                    <td className="px-4 py-2 text-center">
+                    <td className="px-3 sm:px-4 py-2 text-center">
                       <span
-                        className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                        className={`inline-block rounded px-2 py-0.5 text-xs font-medium whitespace-nowrap ${
                           mov.ajustado_manualmente
                             ? 'bg-blue-100 text-blue-800'
                             : 'bg-green-100 text-green-800'
@@ -93,12 +96,12 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
                         {mov.ajustado_manualmente ? 'Modificado' : 'Original'}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-3 sm:px-4 py-2 text-right">
                       <button
                         type="button"
                         onClick={() => onCuotaClick?.(mov)}
                         disabled={mov.es_sintetica}
-                        className="rounded-md px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-100"
+                        className="rounded-md px-3 py-2 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-100 whitespace-nowrap"
                       >
                         {mov.es_sintetica ? 'Pendiente' : 'Ajustar'}
                       </button>
@@ -106,13 +109,13 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
                   </tr>
                 ))}
                 <tr className="border-b bg-slate-100">
-                  <td colSpan="2" className="px-4 py-1 text-right font-semibold text-slate-900">
+                  <td colSpan="2" className="px-3 sm:px-4 py-1 text-right font-semibold text-slate-900">
                     Subtotal mes:
                   </td>
-                  <td className="px-4 py-1 text-right text-slate-700">
+                  <td className="px-3 sm:px-4 py-1 text-right text-slate-700 whitespace-nowrap">
                     {formatCurrency(totalTeorico)}
                   </td>
-                  <td className="px-4 py-1 text-right font-bold text-slate-900">
+                  <td className="px-3 sm:px-4 py-1 text-right font-bold text-slate-900 whitespace-nowrap">
                     {formatCurrency(totalMes)}
                   </td>
                   <td colSpan="2"></td>
@@ -122,6 +125,9 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
           })}
         </tbody>
       </table>
+    </div>
+        </div>
+      </div>
     </div>
   )
 }

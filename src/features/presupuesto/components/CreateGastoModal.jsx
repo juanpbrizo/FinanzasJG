@@ -57,11 +57,11 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, is
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4 z-50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4 z-50">
+      <div className="w-full max-w-md rounded-t-2xl sm:rounded-lg bg-white p-4 sm:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
         <h3 className="text-lg font-semibold text-slate-900">Registrar Gasto</h3>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <Input
             name="monto"
             type="number"
@@ -99,7 +99,7 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, is
             <select
               id="fondo"
               name="fondo_id"
-              className="block w-full rounded-md border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 sm:text-sm"
+              className="block w-full rounded-md border-0 px-3 py-3 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900"
               value={formData.fondo_id}
               onChange={handleChange}
               required
@@ -120,7 +120,7 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, is
             <select
               id="categoria"
               name="categoria_mensual_id"
-              className="block w-full rounded-md border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 sm:text-sm disabled:bg-slate-100 disabled:text-slate-500"
+              className="block w-full rounded-md border-0 px-3 py-3 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 disabled:bg-slate-100 disabled:text-slate-500"
               value={formData.categoria_mensual_id}
               onChange={handleChange}
               disabled={!formData.fondo_id}
@@ -144,7 +144,7 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, is
             <select
               id="medio"
               name="medio_pago"
-              className="block w-full rounded-md border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 sm:text-sm"
+              className="block w-full rounded-md border-0 px-3 py-3 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900"
               value={formData.medio_pago}
               onChange={handleChange}
             >

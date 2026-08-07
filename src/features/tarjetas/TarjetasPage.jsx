@@ -96,15 +96,15 @@ export default function TarjetasPage() {
   if (tarjetasLoading || comprasLoading) return <Spinner />
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Sección: Gestión de Tarjetas */}
       <section>
-        <h2 className="mb-4 text-2xl font-bold text-slate-900">Mis Tarjetas de Crédito</h2>
+        <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">Mis Tarjetas de Crédito</h2>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Formulario de crear/editar */}
           <div>
-            <h3 className="mb-3 text-lg font-semibold text-slate-900">
+            <h3 className="mb-3 text-base sm:text-lg font-semibold text-slate-900">
               {tarjetaEnEdicion ? 'Editar tarjeta' : 'Agregar nueva tarjeta'}
             </h3>
             <TarjetaForm
@@ -116,7 +116,7 @@ export default function TarjetasPage() {
 
           {/* Lista de tarjetas */}
           <div>
-            <h3 className="mb-3 text-lg font-semibold text-slate-900">Tarjetas registradas</h3>
+            <h3 className="mb-3 text-base sm:text-lg font-semibold text-slate-900">Tarjetas registradas</h3>
             <TarjetasList
               tarjetas={tarjetas}
               disponibles={disponibles ?? {}}
@@ -130,7 +130,7 @@ export default function TarjetasPage() {
 
       {/* Sección: Compras en Cuotas */}
       <section>
-        <h2 className="mb-4 text-2xl font-bold text-slate-900">Registrar Compra en Cuotas</h2>
+        <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">Registrar Compra en Cuotas</h2>
         <CompraCuotasForm
           tarjetas={tarjetas}
           fondosPlantilla={fondosPlantilla}
@@ -142,7 +142,7 @@ export default function TarjetasPage() {
       {/* Sección: Proyección de Cuotas */}
       {movimientosProyectados.length > 0 && (
         <section>
-          <h2 className="mb-4 text-2xl font-bold text-slate-900">Proyección de Cuotas (12 meses)</h2>
+          <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">Proyección de Cuotas (12 meses)</h2>
           <ProyeccionCuotasTabla
             movimientos={movimientosProyectados}
             onCuotaClick={handleSeleccionarCuota}

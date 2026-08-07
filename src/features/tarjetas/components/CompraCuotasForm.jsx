@@ -131,13 +131,13 @@ export default function CompraCuotasForm({ tarjetas, fondosPlantilla, onSubmit, 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
       <div>
         <label className="block text-sm font-medium text-slate-900">Tarjeta</label>
         <select
           value={tarjetaId}
           onChange={(e) => setTarjetaId(e.target.value)}
-          className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+          className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
         >
           <option value="">Selecciona una tarjeta</option>
           {tarjetas?.map((t) => (
@@ -211,7 +211,7 @@ export default function CompraCuotasForm({ tarjetas, fondosPlantilla, onSubmit, 
                 setFondoId(e.target.value)
                 setCategoriaId('')
               }}
-              className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+              className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
             >
               <option value="">Selecciona un fondo</option>
               {fondosPlantilla.map((f) => (
@@ -228,7 +228,7 @@ export default function CompraCuotasForm({ tarjetas, fondosPlantilla, onSubmit, 
               value={categoriaId}
               onChange={(e) => setCategoriaId(e.target.value)}
               disabled={!fondoId}
-              className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-100 disabled:text-slate-500"
+              className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-100 disabled:text-slate-500"
             >
               <option value="">
                 {!fondoId ? 'Selecciona primero un fondo' : 'Selecciona una categoría'}
@@ -243,13 +243,13 @@ export default function CompraCuotasForm({ tarjetas, fondosPlantilla, onSubmit, 
         </>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 py-1">
         <input
           type="checkbox"
           id="esMontVariable"
           checked={esMontVariable}
           onChange={(e) => setEsMontVariable(e.target.checked)}
-          className="rounded border-slate-300"
+          className="h-5 w-5 rounded border-slate-300"
         />
         <label htmlFor="esMontVariable" className="text-sm text-slate-700">
           Cuotas variables / ajustables por inflación

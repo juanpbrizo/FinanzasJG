@@ -76,12 +76,12 @@ export default function SuscripcionesPage() {
   if (suscripcionesLoading) return <Spinner />
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Sección: Resumen */}
       {(suscripciones || []).filter((s) => s.activa).length > 0 && (
         <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <h2 className="text-lg font-semibold text-slate-900">Resumen de Suscripciones</h2>
-          <div className="mt-2 grid grid-cols-2 gap-4">
+          <h2 className="text-base sm:text-lg font-semibold text-slate-900">Resumen de Suscripciones</h2>
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-slate-600">Suscripciones activas</p>
               <p className="text-2xl font-bold text-slate-900">
@@ -100,7 +100,7 @@ export default function SuscripcionesPage() {
 
       {/* Sección: Gestión */}
       <section>
-        <h2 className="mb-4 text-2xl font-bold text-slate-900">
+        <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">
           {suscripcionEnEdicion ? 'Editar suscripción' : 'Crear suscripción recurrente'}
         </h2>
 
@@ -129,7 +129,7 @@ export default function SuscripcionesPage() {
 
           {/* Lista */}
           <div>
-            <h3 className="mb-3 text-lg font-semibold text-slate-900">Suscripciones registradas</h3>
+            <h3 className="mb-3 text-base sm:text-lg font-semibold text-slate-900">Suscripciones registradas</h3>
             <SuscripcionesList
               suscripciones={suscripciones}
               tarjetas={tarjetas}
