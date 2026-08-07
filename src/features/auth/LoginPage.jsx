@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
-        <h1 className="text-xl font-semibold text-slate-900">app-finanzas</h1>
+        <h1 className="text-xl font-semibold text-slate-900">FinanzasJG</h1>
         <p className="mt-1 text-sm text-slate-600">Aplicación privada de acceso restringido.</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

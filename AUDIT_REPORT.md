@@ -8,7 +8,7 @@
 
 ## 1. RESUMEN EJECUTIVO
 
-El proyecto **app-finanzas** ha implementado exitosamente **94 de 100 tareas** del MASTER_BLUEPRINT.md a través de Fases 0–4. La arquitectura de datos es sólida, las migraciones están versionadas, y la lógica de negocio crítica (motor de tarjetas, transferencias, arrastre de saldos) está completa.
+El proyecto **FinanzasJG** ha implementado exitosamente **94 de 100 tareas** del MASTER_BLUEPRINT.md a través de Fases 0–4. La arquitectura de datos es sólida, las migraciones están versionadas, y la lógica de negocio crítica (motor de tarjetas, transferencias, arrastre de saldos) está completa.
 
 **Sin embargo, existe UNA BRECHA CRÍTICA no prevista:**
 

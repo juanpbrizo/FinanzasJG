@@ -31,7 +31,7 @@ export default function AppLayout() {
       {/* Header Desktop */}
       <header className="hidden sm:block border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-4 sm:px-6 py-3">
-          <span className="font-semibold text-slate-900">app-finanzas</span>
+          <span className="font-semibold text-slate-900">FinanzasJG</span>
           <nav className="flex flex-1 flex-wrap gap-1">
             {LINKS.map(({ to, label }) => (
               <NavLink key={to} to={to} className={linkClass}>
@@ -49,7 +49,7 @@ export default function AppLayout() {
       {/* Header Mobile */}
       <header className="sm:hidden border-b border-slate-200 bg-white sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3">
-          <span className="font-semibold text-slate-900">app-finanzas</span>
+          <span className="font-semibold text-slate-900">FinanzasJG</span>
           <Button variant="secondary" size="sm" onClick={() => signOut()}>
             Salir
           </Button>
