@@ -1,0 +1,55 @@
+name: Deploy Vite to GitHub Pages
+
+on:
+  # Se ejecuta automáticamente cada vez que haces push a la rama 'main'
+  push:
+    branches: ['main']
+
+# Permisos necesarios para que GitHub Actions pueda publicar en Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Evita que múltiples despliegues simultáneos se pisen entre sí
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Construir el proyecto (Build)
+        run: npm run build
+        # AQUÍ SE INYECTAN TUS VARIABLES SECRETA DE SUPABASE
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Subir artefacto (la carpeta dist generada)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
