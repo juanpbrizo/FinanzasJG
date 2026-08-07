@@ -1,14 +1,14 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
 import NotFoundPage from './components/NotFoundPage'
 import LoginPage from './features/auth/LoginPage'
 import ProtectedRoute from './features/auth/ProtectedRoute'
-import DashboardPage from './features/dashboard/DashboardPage'
 import DashboardAnalyticsPage from './features/dashboard/DashboardAnalyticsPage'
 import MesPage from './features/presupuesto/MesPage'
 import TarjetasPage from './features/tarjetas/TarjetasPage'
 import SuscripcionesPage from './features/suscripciones/SuscripcionesPage'
 import ConfiguracionPage from './features/configuracion/ConfiguracionPage'
+import { periodoActual } from './lib/formatters'
 
 export default function AppRoutes() {
   return (
@@ -17,7 +17,7 @@ export default function AppRoutes() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route index element={<DashboardPage />} />
+          <Route index element={<Navigate to={`/analytics/${periodoActual()}`} replace />} />
           <Route path="analytics/:periodo?" element={<DashboardAnalyticsPage />} />
           <Route path="mes/:periodo" element={<MesPage />} />
           <Route path="tarjetas" element={<TarjetasPage />} />

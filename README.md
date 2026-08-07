@@ -21,6 +21,7 @@ La aplicación está optimizada para dispositivos móviles con:
 
 ## Funcionalidades principales
 
+- **Vista de Analítica como pantalla principal** con gráficos de gastos, tendencias y proyecciones
 - Acceso restringido por invitacion (email + contrasena, sin registro publico)
 - Gestion de periodos mensuales (`/mes/:periodo`)
 - Ingresos del periodo (crear, editar, eliminar)
@@ -31,7 +32,7 @@ La aplicación está optimizada para dispositivos móviles con:
 - Cierre de mes
 - Tarjetas de credito y compras en cuotas
 - **Suscripciones recurrentes** (Netflix, Spotify, etc) - liquidación automática con frecuencias variables
-- Analytics anual
+- Dashboard de analytics anual con exportación CSV
 
 ## Requisitos
 
@@ -141,6 +142,11 @@ liquidan automaticamente por periodo al inicializar o sincronizar el mes.
   - Grids responsive: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
   - Padding adaptativo: px-4 py-4 sm:px-6 sm:py-8
   - Botones con min-height para mejor área táctil (min-h-[2.5rem] a min-h-[3rem])
+- **Refactorización de navegación y rutas**:
+  - Eliminada pestaña "Resumen" por falta de información relevante
+  - Vista de Analítica configurada como pantalla principal (ruta index `/` redirije a `/analytics`)
+  - Reorganizada navegación con 5 items: Analítica, Mes, Tarjetas, Suscripciones, Configuración
+  - Bottom navigation mobile optimizado a grid-cols-5
 - `npm run verify` pasa limpio con lint + build.
 
 ## Estructura (resumen)

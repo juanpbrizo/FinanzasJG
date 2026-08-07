@@ -4,9 +4,8 @@ import { useAuth } from '../features/auth/useAuth'
 import { periodoActual } from '../lib/formatters'
 
 const LINKS = [
-  { to: '/', label: 'Resumen', end: true },
+  { to: `/analytics/${periodoActual()}`, label: 'Analítica' },
   { to: `/mes/${periodoActual()}`, label: 'Mes' },
-  { to: `/analytics/${periodoActual()}`, label: 'Analytics' },
   { to: '/tarjetas', label: 'Tarjetas' },
   { to: '/suscripciones', label: 'Suscripciones' },
   { to: '/configuracion', label: 'Configuracion' },
@@ -34,8 +33,8 @@ export default function AppLayout() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-4 sm:px-6 py-3">
           <span className="font-semibold text-slate-900">app-finanzas</span>
           <nav className="flex flex-1 flex-wrap gap-1">
-            {LINKS.map(({ to, label, end }) => (
-              <NavLink key={to} to={to} end={end} className={linkClass}>
+            {LINKS.map(({ to, label }) => (
+              <NavLink key={to} to={to} className={linkClass}>
                 {label}
               </NavLink>
             ))}
@@ -63,9 +62,9 @@ export default function AppLayout() {
 
       {/* Bottom Navigation Mobile */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white">
-        <div className="grid grid-cols-6 gap-1 px-2 py-2">
-          {LINKS.map(({ to, label, end }) => (
-            <NavLink key={to} to={to} end={end} className={linkClassMobile}>
+        <div className="grid grid-cols-5 gap-1 px-2 py-2">
+          {LINKS.map(({ to, label }) => (
+            <NavLink key={to} to={to} className={linkClassMobile}>
               <span className="truncate text-center w-full">{label}</span>
             </NavLink>
           ))}
