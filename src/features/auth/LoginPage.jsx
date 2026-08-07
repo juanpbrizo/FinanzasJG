@@ -37,7 +37,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <h1 className="text-xl font-semibold text-slate-900">app-finanzas</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Ingresa tu email y te enviaremos un enlace de acceso.
+          Aplicación privada de acceso restringido.
         </p>
 
         {estado === 'enviado' ? (
@@ -66,7 +66,7 @@ export default function LoginPage() {
             ) : null}
 
             <Button type="submit" className="w-full" disabled={estado === 'enviando'}>
-              {estado === 'enviando' ? 'Enviando...' : 'Enviar enlace de acceso'}
+              {estado === 'enviando' ? 'Enviando...' : 'Enviar Enlace de Acceso'}
             </Button>
           </form>
         )}

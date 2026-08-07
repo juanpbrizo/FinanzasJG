@@ -11,6 +11,7 @@ Aplicacion web de finanzas personales con presupuesto mensual, fondos/categorias
 
 ## Funcionalidades principales
 
+- Acceso restringido por invitacion (Magic Link, sin auto-registro)
 - Gestion de periodos mensuales (`/mes/:periodo`)
 - Ingresos del periodo (crear, editar, eliminar)
 - Fondos y categorias de plantilla (`/configuracion`)
@@ -47,6 +48,20 @@ VITE_SUPABASE_ANON_KEY=tu_anon_key
 ```bash
 npm run dev
 ```
+
+## Acceso (aplicacion privada)
+
+El login usa Magic Link con `shouldCreateUser: false`, por lo que solo pueden ingresar
+usuarios ya existentes en Supabase. Un email no autorizado no recibe correo: la UI
+muestra "Acceso denegado".
+
+Para habilitar a alguien, crear el usuario desde Supabase (Authentication > Users).
+
+La URL de retorno del enlace se toma de `window.location.origin`, de modo que funciona
+tanto en local como en produccion. Es necesario declarar ambos origenes en Supabase:
+
+- Authentication > URL Configuration > **Site URL**: dominio de produccion
+- Authentication > URL Configuration > **Redirect URLs**: agregar tambien `http://localhost:5173`
 
 ## Scripts disponibles
 
