@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { calcularPrimerPeriodoImpacto, generarPeriodosCuotas } from '../calcularImpacto'
 import { formatCurrency, formatMonthLabel } from '../../../lib/formatters'
 import Button from '../../../components/ui/Button'
@@ -13,13 +13,14 @@ function aMesInput(fecha) {
  * CompraCuotasForm: Formulario para registrar compra en N cuotas.
  * Incluye preview en vivo de la distribución de cuotas.
  */
-export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoading }) {
+export default function CompraCuotasForm({ tarjetas, fondosPlantilla, onSubmit, isLoading }) {
   const [tarjetaId, setTarjetaId] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [montoTotal, setMontoTotal] = useState('')
   const [cantidadCuotas, setCantidadCuotas] = useState('')
   const [fechaCompra, setFechaCompra] = useState(new Date().toISOString().split('T')[0])
   const [primerVencimiento, setPrimerVencimiento] = useState('')
+  const [fondoId, setFondoId] = useState('')
   const [categoriaId, setCategoriaId] = useState('')
   const [esMontVariable, setEsMontVariable] = useState(false)
   const [error, setError] = useState('')
@@ -27,6 +28,13 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
   const tarjetaSeleccionada = tarjetas?.find((t) => t.id === tarjetaId)
   const cantidadCuotasNum = parseInt(cantidadCuotas, 10) || 0
   const montoTotalNum = parseFloat(montoTotal) || 0
+
+  // Categorías filtradas según fondo seleccionado
+  const categoriasFiltradas = useMemo(() => {
+    if (!fondoId || !fondosPlantilla) return []
+    const fondo = fondosPlantilla.find((f) => f.id === fondoId)
+    return fondo?.categorias_plantilla ?? []
+  }, [fondoId, fondosPlantilla])
 
   // Vencimiento sugerido (Regla R2 + mes_impacto_offset de la tarjeta).
   let vencimientoSugerido = ''
@@ -77,9 +85,9 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
     // La RPC imputa cada cuota a una categoría del presupuesto: es obligatoria.
     if (!categoriaId) {
       setError(
-        categorias && categorias.length > 0
-          ? 'Debes seleccionar una categoría'
-          : 'No hay categorías en tu plantilla. Creá al menos una en Configuración antes de registrar compras en cuotas.'
+        fondosPlantilla && fondosPlantilla.length > 0
+          ? 'Debes seleccionar un fondo y una categoría'
+          : 'No hay fondos en tu plantilla. Creá al menos uno en Configuración antes de registrar compras en cuotas.'
       )
       return
     }
@@ -108,6 +116,7 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
       setCantidadCuotas('')
       setFechaCompra(new Date().toISOString().split('T')[0])
       setPrimerVencimiento('')
+      setFondoId('')
       setCategoriaId('')
       setEsMontVariable(false)
     } catch (err) {
@@ -192,22 +201,46 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
         </p>
       </div>
 
-      {categorias && categorias.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-slate-900">Categoría</label>
-          <select
-            value={categoriaId}
-            onChange={(e) => setCategoriaId(e.target.value)}
-            className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-          >
-            <option value="">Selecciona una categoría</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
+      {fondosPlantilla && fondosPlantilla.length > 0 && (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-slate-900">Fondo</label>
+            <select
+              value={fondoId}
+              onChange={(e) => {
+                setFondoId(e.target.value)
+                setCategoriaId('')
+              }}
+              className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+            >
+              <option value="">Selecciona un fondo</option>
+              {fondosPlantilla.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-900">Categoría</label>
+            <select
+              value={categoriaId}
+              onChange={(e) => setCategoriaId(e.target.value)}
+              disabled={!fondoId}
+              className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-100 disabled:text-slate-500"
+            >
+              <option value="">
+                {!fondoId ? 'Selecciona primero un fondo' : 'Selecciona una categoría'}
               </option>
-            ))}
-          </select>
-        </div>
+              {categoriasFiltradas.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        </>
       )}
 
       <div className="flex items-center gap-2">

@@ -1,28 +1,48 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 
-export default function CreateGastoModal({ isOpen, onClose, onSubmit, categorias, isLoading }) {
+export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, isLoading }) {
   const [formData, setFormData] = useState({
     monto: '',
     descripcion: '',
     fecha_transaccion: new Date().toISOString().split('T')[0],
+    fondo_id: '',
     categoria_mensual_id: '',
     medio_pago: 'efectivo',
   })
+
+  // Categorías filtradas según fondo seleccionado
+  const categoriasFiltradas = useMemo(() => {
+    if (!formData.fondo_id || !fondos) return []
+    const fondo = fondos.find((f) => f.id === formData.fondo_id)
+    return fondo?.categorias_mensuales ?? []
+  }, [formData.fondo_id, fondos])
 
   if (!isOpen) return null
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name === 'fondo_id') {
+      // Al cambiar fondo, limpiar categoría
+      setFormData((prev) => ({
+        ...prev,
+        fondo_id: value,
+        categoria_mensual_id: '',
+      }))
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     const creado = await onSubmit({
-      ...formData,
       monto: parseFloat(formData.monto),
+      descripcion: formData.descripcion,
+      fecha_transaccion: formData.fecha_transaccion,
+      categoria_mensual_id: formData.categoria_mensual_id,
+      medio_pago: formData.medio_pago,
     })
     // Si el guardado falla se conservan los datos para reintentar.
     if (creado === false) return
@@ -30,6 +50,7 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, categorias
       monto: '',
       descripcion: '',
       fecha_transaccion: new Date().toISOString().split('T')[0],
+      fondo_id: '',
       categoria_mensual_id: '',
       medio_pago: 'efectivo',
     })
@@ -72,19 +93,43 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, categorias
           />
 
           <div>
+            <label htmlFor="fondo" className="mb-1.5 block text-sm font-medium text-slate-700">
+              Fondo
+            </label>
+            <select
+              id="fondo"
+              name="fondo_id"
+              className="block w-full rounded-md border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 sm:text-sm"
+              value={formData.fondo_id}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Selecciona un fondo</option>
+              {fondos?.map((fondo) => (
+                <option key={fondo.id} value={fondo.id}>
+                  {fondo.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label htmlFor="categoria" className="mb-1.5 block text-sm font-medium text-slate-700">
               Categoría
             </label>
             <select
               id="categoria"
               name="categoria_mensual_id"
-              className="block w-full rounded-md border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 sm:text-sm"
+              className="block w-full rounded-md border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 sm:text-sm disabled:bg-slate-100 disabled:text-slate-500"
               value={formData.categoria_mensual_id}
               onChange={handleChange}
+              disabled={!formData.fondo_id}
               required
             >
-              <option value="">Selecciona una categoría</option>
-              {categorias?.map((cat) => (
+              <option value="">
+                {!formData.fondo_id ? 'Selecciona primero un fondo' : 'Selecciona una categoría'}
+              </option>
+              {categoriasFiltradas?.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.nombre}
                 </option>

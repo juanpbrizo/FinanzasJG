@@ -7,6 +7,7 @@ import DashboardPage from './features/dashboard/DashboardPage'
 import DashboardAnalyticsPage from './features/dashboard/DashboardAnalyticsPage'
 import MesPage from './features/presupuesto/MesPage'
 import TarjetasPage from './features/tarjetas/TarjetasPage'
+import SuscripcionesPage from './features/suscripciones/SuscripcionesPage'
 import ConfiguracionPage from './features/configuracion/ConfiguracionPage'
 
 export default function AppRoutes() {
@@ -20,6 +21,7 @@ export default function AppRoutes() {
           <Route path="analytics/:periodo?" element={<DashboardAnalyticsPage />} />
           <Route path="mes/:periodo" element={<MesPage />} />
           <Route path="tarjetas" element={<TarjetasPage />} />
+          <Route path="suscripciones" element={<SuscripcionesPage />} />
           <Route path="configuracion" element={<ConfiguracionPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

@@ -8,6 +8,7 @@ const LINKS = [
   { to: `/mes/${periodoActual()}`, label: 'Mes' },
   { to: `/analytics/${periodoActual()}`, label: 'Analytics' },
   { to: '/tarjetas', label: 'Tarjetas' },
+  { to: '/suscripciones', label: 'Suscripciones' },
   { to: '/configuracion', label: 'Configuracion' },
 ]
 

@@ -169,9 +169,6 @@ export default function MesPage() {
     setShowIngresoModal(true)
   }
 
-  // Obtener todas las categorias para el selector del gasto.
-  const todasLasCategorias = fondos?.flatMap((fondo) => fondo.categorias_mensuales ?? []) ?? []
-
   if (periodoLoading || fondosLoading) return <Spinner />
 
   return (
@@ -321,7 +318,7 @@ export default function MesPage() {
             isOpen={showGastoModal}
             onClose={() => setShowGastoModal(false)}
             onSubmit={handleCrearGasto}
-            categorias={todasLasCategorias}
+            fondos={fondos}
             isLoading={crearGasto.isPending}
           />
 

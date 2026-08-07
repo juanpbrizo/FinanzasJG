@@ -16,10 +16,11 @@ Aplicacion web de finanzas personales con presupuesto mensual, fondos/categorias
 - Ingresos del periodo (crear, editar, eliminar)
 - Fondos y categorias de plantilla (`/configuracion`)
 - Sincronizacion de plantilla hacia el mes activo
-- Registro de gastos por categoria
+- Registro de gastos por categoria con **selector en cascada Fondo → Categoría**
 - Transferencias entre fondos
 - Cierre de mes
 - Tarjetas de credito y compras en cuotas
+- **Suscripciones recurrentes** (Netflix, Spotify, etc) - liquidación automática con frecuencias variables
 - Analytics anual
 
 ## Requisitos
@@ -88,14 +89,40 @@ Para este estado del proyecto, aplicar en orden:
 11. `20260806000010_fix_movimientos_insert_403.sql`
 12. `20260806000011_fix_compras_cuotas_400_404.sql`
 13. `20260806000012_liquidacion_dinamica_cuotas.sql`
+14. `20260807000000_suscripciones_recurrentes.sql` - Suscripciones con liquidación automática
+15. `20260807000001_fix_suscripciones_default_usuario_id.sql` - RLS correction
+16. `20260807000002_fix_suscripciones_categoria_plantilla.sql` - Schema fix
+
+### Características de las suscripciones
+
+- Registro de servicios recurrentes (MENSUAL, BIMESTRAL, TRIMESTRAL, SEMESTRAL, ANUAL)
+- Liquidación automática al inicializar o sincronizar el período
+- Descuento del límite disponible de la tarjeta como gasto comprometido
+- Frecuencias personalizables con mes de cobro anual para suscripciones anuales
+- RLS por usuario para privacidad
+
+### Formularios con cascada Fondo → Categoría
+
+Los formularios de "Crear Gasto" y "Compra en Cuotas" ahora usan un selector en cascada:
+1. Seleccionar **Fondo** (Comida, Ocio, Servicios, etc)
+2. Se despliegan únicamente las **Categorías** de ese Fondo
+3. La categoría se limpia automáticamente si el usuario cambia el fondo
 
 Las compras en cuotas se registran en `compras_cuotas` y sus movimientos se
 liquidan automaticamente por periodo al inicializar o sincronizar el mes.
 
-## Correcciones recientes
+## Correcciones y mejoras recientes
 
 - Se corrigio el INSERT de gastos para adjuntar `usuario_id` y resolver el 403 en `movimientos`.
 - Se ajusto el flujo de compras en cuotas para evitar 400 por payload invalido y 404 en la vista de estado/proyeccion.
+- Implementado módulo completo de **Suscripciones Recurrentes** con:
+  - Tabla `suscripciones` con RLS por usuario
+  - ENUM `frecuencia_suscripcion` con 5 opciones de periodicidad
+  - RPC `liquidar_suscripciones_periodo()` para generación automática de movimientos
+  - Integración en `inicializar_periodo()` y `sincronizar_fondos_desde_plantilla()`
+  - Vista `v_resumen_tarjetas` actualizada con CTE para cálculo de comprometido (cuotas + suscripciones)
+  - Migraciones idempotentes para aplicación repetible
+- Refactorizado UI: selector en cascada **Fondo → Categoría** en formularios de gastos y compras
 - `npm run verify` pasa limpio con lint + build.
 
 ## Estructura (resumen)

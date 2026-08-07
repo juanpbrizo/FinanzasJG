@@ -50,13 +50,6 @@ export default function TarjetasPage() {
     [comprasCuotas, todoMovimientos],
   )
 
-  // Extrae categorías de fondos plantilla (para el formulario de compra)
-  const categorias = fondosPlantilla
-    ? fondosPlantilla.flatMap((fondo) =>
-        fondo.categorias_plantilla ? fondo.categorias_plantilla.map((c) => ({ ...c, fondo_nombre: fondo.nombre })) : []
-      )
-    : []
-
   const handleCrearTarjeta = async (payload) => {
     await crearTarjeta.mutateAsync(payload)
   }
@@ -140,7 +133,7 @@ export default function TarjetasPage() {
         <h2 className="mb-4 text-2xl font-bold text-slate-900">Registrar Compra en Cuotas</h2>
         <CompraCuotasForm
           tarjetas={tarjetas}
-          categorias={categorias}
+          fondosPlantilla={fondosPlantilla}
           onSubmit={handleRegistrarCompraCuotas}
           isLoading={registrarCompraCuotas.isPending}
         />
