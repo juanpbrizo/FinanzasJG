@@ -1,8 +1,13 @@
 import { useState } from 'react'
-import { calcularImpacto, generarPeriodosCuotas } from '../calcularImpacto'
+import { calcularPrimerPeriodoImpacto, generarPeriodosCuotas } from '../calcularImpacto'
 import { formatCurrency, formatMonthLabel } from '../../../lib/formatters'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
+
+/** Date -> 'YYYY-MM' para <input type="month">. */
+function aMesInput(fecha) {
+  return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`
+}
 
 /**
  * CompraCuotasForm: Formulario para registrar compra en N cuotas.
@@ -14,6 +19,7 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
   const [montoTotal, setMontoTotal] = useState('')
   const [cantidadCuotas, setCantidadCuotas] = useState('')
   const [fechaCompra, setFechaCompra] = useState(new Date().toISOString().split('T')[0])
+  const [primerVencimiento, setPrimerVencimiento] = useState('')
   const [categoriaId, setCategoriaId] = useState('')
   const [esMontVariable, setEsMontVariable] = useState(false)
   const [error, setError] = useState('')
@@ -22,21 +28,32 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
   const cantidadCuotasNum = parseInt(cantidadCuotas, 10) || 0
   const montoTotalNum = parseFloat(montoTotal) || 0
 
-  // Calcula primer período de impacto (Regla R2)
-  let primerPeriodo = null
-  let periodosPreview = []
-  let montoPorCuota = 0
-
-  if (tarjetaSeleccionada && fechaCompra && cantidadCuotasNum > 0 && montoTotalNum > 0) {
+  // Vencimiento sugerido (Regla R2 + mes_impacto_offset de la tarjeta).
+  let vencimientoSugerido = ''
+  if (tarjetaSeleccionada && fechaCompra) {
     try {
-      const fecha = new Date(fechaCompra)
-      primerPeriodo = calcularImpacto(fecha, tarjetaSeleccionada.dia_cierre)
-      periodosPreview = generarPeriodosCuotas(primerPeriodo, cantidadCuotasNum)
-      montoPorCuota = montoTotalNum / cantidadCuotasNum
+      vencimientoSugerido = aMesInput(
+        calcularPrimerPeriodoImpacto(
+          fechaCompra,
+          tarjetaSeleccionada.dia_cierre,
+          tarjetaSeleccionada.mes_impacto_offset,
+        ),
+      )
     } catch (err) {
       console.error('Error al calcular impacto:', err)
     }
   }
+
+  // El usuario puede adelantar/atrasar el primer vencimiento manualmente.
+  const vencimientoEfectivo = primerVencimiento || vencimientoSugerido
+  const primerPeriodo = vencimientoEfectivo
+    ? new Date(Number(vencimientoEfectivo.slice(0, 4)), Number(vencimientoEfectivo.slice(5, 7)) - 1, 1)
+    : null
+  const montoPorCuota = cantidadCuotasNum > 0 ? montoTotalNum / cantidadCuotasNum : 0
+  const periodosPreview =
+    primerPeriodo && cantidadCuotasNum > 0 && montoTotalNum > 0
+      ? generarPeriodosCuotas(primerPeriodo, cantidadCuotasNum)
+      : []
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -49,6 +66,11 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
 
     if (!descripcion.trim() || !montoTotal || !cantidadCuotas || !fechaCompra) {
       setError('Todos los campos son obligatorios')
+      return
+    }
+
+    if (!vencimientoEfectivo) {
+      setError('Indicá el mes del primer vencimiento')
       return
     }
 
@@ -74,6 +96,7 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
         monto_total: parseFloat(montoTotal),
         cantidad_cuotas: parseInt(cantidadCuotas, 10),
         fecha_compra: fechaCompra,
+        primer_periodo_impacto: `${vencimientoEfectivo}-01`,
         categoria_plantilla_id: categoriaId,
         es_monto_variable: esMontVariable,
       })
@@ -84,6 +107,7 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
       setMontoTotal('')
       setCantidadCuotas('')
       setFechaCompra(new Date().toISOString().split('T')[0])
+      setPrimerVencimiento('')
       setCategoriaId('')
       setEsMontVariable(false)
     } catch (err) {
@@ -154,6 +178,20 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
         <Input type="date" value={fechaCompra} onChange={(e) => setFechaCompra(e.target.value)} />
       </div>
 
+      <div>
+        <label className="block text-sm font-medium text-slate-900">Mes del primer vencimiento</label>
+        <Input
+          type="month"
+          value={vencimientoEfectivo}
+          onChange={(e) => setPrimerVencimiento(e.target.value)}
+        />
+        <p className="mt-1 text-xs text-slate-600">
+          {vencimientoSugerido
+            ? `Sugerido según el cierre de la tarjeta: ${formatMonthLabel(`${vencimientoSugerido}-01`)}. Las cuotas no impactan el presupuesto hasta ese mes.`
+            : 'Elegí primero la tarjeta y la fecha de compra para calcular el vencimiento sugerido.'}
+        </p>
+      </div>
+
       {categorias && categorias.length > 0 && (
         <div>
           <label className="block text-sm font-medium text-slate-900">Categoría</label>
@@ -190,13 +228,13 @@ export default function CompraCuotasForm({ tarjetas, categorias, onSubmit, isLoa
         <div className="rounded-lg bg-slate-50 p-3">
           <p className="mb-2 text-sm font-medium text-slate-900">
             Preview: {cantidadCuotasNum} cuotas de {formatCurrency(montoPorCuota)} desde{' '}
-            {formatMonthLabel(primerPeriodo.toISOString().split('T')[0])}
+            {formatMonthLabel(primerPeriodo)}
           </p>
           <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
             {periodosPreview.map((periodo, i) => (
               <div key={i} className="flex justify-between">
                 <span>Cuota {i + 1}:</span>
-                <span>{formatMonthLabel(periodo.toISOString().split('T')[0])}</span>
+                <span>{formatMonthLabel(periodo)}</span>
               </div>
             ))}
           </div>

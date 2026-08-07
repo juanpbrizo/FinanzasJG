@@ -86,6 +86,7 @@ export async function eliminarTarjeta(tarjetaId) {
 
 const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const RE_FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/
+const RE_PERIODO = /^\d{4}-\d{2}-01$/
 
 /**
  * Registra una compra en N cuotas via RPC.
@@ -121,6 +122,11 @@ export async function registrarCompraCuotas(payload) {
     throw new Error('La fecha de compra debe tener formato YYYY-MM-DD')
   }
 
+  const primer_periodo_impacto = payload.primer_periodo_impacto || null
+  if (primer_periodo_impacto && !RE_PERIODO.test(primer_periodo_impacto)) {
+    throw new Error('El primer vencimiento debe ser el día 1 de un mes (YYYY-MM-01)')
+  }
+
   const { data, error } = await supabase.rpc('registrar_compra_cuotas', {
     p_tarjeta_id: tarjeta_id,
     p_descripcion: descripcion,
@@ -129,6 +135,7 @@ export async function registrarCompraCuotas(payload) {
     p_fecha_compra: fecha_compra,
     p_categoria_plantilla_id: categoria_plantilla_id,
     p_es_monto_variable: Boolean(payload.es_monto_variable),
+    p_primer_periodo_impacto: primer_periodo_impacto,
   })
 
   if (error) throw error
@@ -269,32 +276,29 @@ export async function obtenerEstadoComprasCuotas(tarjetaId = null) {
 }
 
 // ============================================================================
-// UTILIDADES
+// LÍMITE DISPONIBLE
 // ============================================================================
 
 /**
- * Calcula el límite disponible de una tarjeta.
- * disponible = limite_total - (suma de cuotas pendientes)
+ * Resumen de límite/comprometido/disponible de todas las tarjetas.
+ * El comprometido es el monto TOTAL de cada compra hasta que sus cuotas quedan
+ * saldadas (periodo cerrado), no solo la cuota liquidada del mes.
+ * @returns {Promise<Record<string, {limite_total:number, comprometido:number, disponible:number}>>}
  */
-export async function calcularDisponibleTarjeta(tarjetaId) {
-  // Obtiene la tarjeta
-  const tarjeta = await obtenerTarjeta(tarjetaId)
-  if (!tarjeta) throw new Error('Tarjeta no encontrada')
+export async function obtenerResumenTarjetas() {
+  const supabase = getSupabase()
+  const { data, error } = await supabase
+    .from('v_resumen_tarjetas')
+    .select('tarjeta_id, limite_total, comprometido, disponible')
 
-  // Obtiene todas las compras en cuotas
-  const compras = await obtenerComprasCuotas(tarjetaId)
+  if (error) throw error
 
-  // Suma de cuotas pendientes (aproximado; en Fase 3 optimizamos con una view dedicada)
-  let totalComprometido = 0
-  for (const compra of compras) {
-    const movimientos = await obtenerMovimientosCompraCuotas(compra.id)
-    const sumaCuotas = movimientos.reduce((acc, m) => acc + parseFloat(m.monto || 0), 0)
-    totalComprometido += sumaCuotas
-  }
-
-  return {
-    limite_total: tarjeta.limite_total,
-    comprometido: totalComprometido,
-    disponible: tarjeta.limite_total - totalComprometido,
-  }
+  return (data || []).reduce((acc, fila) => {
+    acc[fila.tarjeta_id] = {
+      limite_total: Number(fila.limite_total || 0),
+      comprometido: Number(fila.comprometido || 0),
+      disponible: Number(fila.disponible || 0),
+    }
+    return acc
+  }, {})
 }

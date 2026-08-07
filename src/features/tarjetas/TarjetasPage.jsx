@@ -5,12 +5,13 @@ import TarjetasList from './components/TarjetasList'
 import CompraCuotasForm from './components/CompraCuotasForm'
 import ProyeccionCuotasTabla from './components/ProyeccionCuotasTabla'
 import CuotaEditModal from './components/CuotaEditModal'
+import { construirProyeccionCuotas } from './proyeccion'
 import {
   useTarjetas,
   useCrearTarjeta,
   useActualizarTarjeta,
   useEliminarTarjeta,
-  useDisponiblesPorTarjeta,
+  useResumenTarjetas,
   useComprasCuotas,
   useRegistrarCompraCuotas,
   useMovimientosDeCompras,
@@ -38,13 +39,16 @@ export default function TarjetasPage() {
   const recalcularSaldo = useRecalcularCuotasPendientes()
 
   // Disponible por tarjeta y movimientos de cada compra.
-  // Se resuelven con useQueries: la cantidad de tarjetas/compras es variable y
-  // llamar useQuery dentro de un forEach rompe las Rules of Hooks.
-  const tarjetaIds = useMemo(() => tarjetas?.map((t) => t.id) ?? [], [tarjetas])
+  // Los movimientos se resuelven con useQueries: la cantidad de compras es
+  // variable y llamar useQuery dentro de un forEach rompe las Rules of Hooks.
   const compraIds = useMemo(() => comprasCuotas?.map((c) => c.id) ?? [], [comprasCuotas])
 
-  const disponibles = useDisponiblesPorTarjeta(tarjetaIds)
+  const { data: disponibles } = useResumenTarjetas()
   const todoMovimientos = useMovimientosDeCompras(compraIds)
+  const movimientosProyectados = useMemo(
+    () => construirProyeccionCuotas(comprasCuotas ?? [], todoMovimientos ?? []),
+    [comprasCuotas, todoMovimientos],
+  )
 
   // Extrae categorías de fondos plantilla (para el formulario de compra)
   const categorias = fondosPlantilla
@@ -122,7 +126,7 @@ export default function TarjetasPage() {
             <h3 className="mb-3 text-lg font-semibold text-slate-900">Tarjetas registradas</h3>
             <TarjetasList
               tarjetas={tarjetas}
-              disponibles={disponibles}
+              disponibles={disponibles ?? {}}
               onEdit={handleEditarTarjeta}
               onDelete={handleEliminarTarjeta}
               isLoading={eliminarTarjeta.isPending}
@@ -143,11 +147,11 @@ export default function TarjetasPage() {
       </section>
 
       {/* Sección: Proyección de Cuotas */}
-      {todoMovimientos.length > 0 && (
+      {movimientosProyectados.length > 0 && (
         <section>
           <h2 className="mb-4 text-2xl font-bold text-slate-900">Proyección de Cuotas (12 meses)</h2>
           <ProyeccionCuotasTabla
-            movimientos={todoMovimientos}
+            movimientos={movimientosProyectados}
             onCuotaClick={handleSeleccionarCuota}
           />
           <p className="mt-2 text-xs text-slate-600">

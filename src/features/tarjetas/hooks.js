@@ -70,33 +70,14 @@ export function useEstadoComprasCuotas(tarjetaId = null) {
   })
 }
 
-export function useDisponibleTarjeta(tarjetaId) {
-  return useQuery({
-    queryKey: ['disponible_tarjeta', tarjetaId],
-    queryFn: () => api.calcularDisponibleTarjeta(tarjetaId),
-    staleTime: 1000 * 60,
-    enabled: !!tarjetaId,
-  })
-}
-
 /**
- * Disponible de varias tarjetas resuelto en un unico hook.
- * useQueries admite listas de largo variable sin violar las Rules of Hooks.
- * @param {string[]} tarjetaIds
- * @returns {Record<string, unknown>} mapa tarjetaId -> disponible
+ * Límite / comprometido / disponible de todas las tarjetas, indexado por id.
  */
-export function useDisponiblesPorTarjeta(tarjetaIds = []) {
-  return useQueries({
-    queries: tarjetaIds.map((id) => ({
-      queryKey: ['disponible_tarjeta', id],
-      queryFn: () => api.calcularDisponibleTarjeta(id),
-      staleTime: 1000 * 60,
-    })),
-    combine: (results) =>
-      results.reduce((acc, result, index) => {
-        if (result.data) acc[tarjetaIds[index]] = result.data
-        return acc
-      }, {}),
+export function useResumenTarjetas() {
+  return useQuery({
+    queryKey: ['tarjetas_resumen'],
+    queryFn: api.obtenerResumenTarjetas,
+    staleTime: 1000 * 60,
   })
 }
 
@@ -126,6 +107,7 @@ export function useCrearTarjeta() {
     mutationFn: api.crearTarjeta,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tarjetas'] })
+      queryClient.invalidateQueries({ queryKey: ['tarjetas_resumen'] })
     },
   })
 }
@@ -137,9 +119,9 @@ export function useActualizarTarjeta() {
     mutationFn: ({ tarjetaId, payload }) => api.actualizarTarjeta(tarjetaId, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['tarjetas'] })
+      queryClient.invalidateQueries({ queryKey: ['tarjetas_resumen'] })
       if (data?.id) {
         queryClient.invalidateQueries({ queryKey: ['tarjeta', data.id] })
-        queryClient.invalidateQueries({ queryKey: ['disponible_tarjeta', data.id] })
       }
     },
   })
@@ -152,6 +134,7 @@ export function useEliminarTarjeta() {
     mutationFn: api.eliminarTarjeta,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tarjetas'] })
+      queryClient.invalidateQueries({ queryKey: ['tarjetas_resumen'] })
       queryClient.invalidateQueries({ queryKey: ['compras_cuotas'] })
       queryClient.invalidateQueries({ queryKey: ['estado_compras'] })
     },
@@ -163,16 +146,14 @@ export function useRegistrarCompraCuotas() {
 
   return useMutation({
     mutationFn: api.registrarCompraCuotas,
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       // Invalida listas de compras
       queryClient.invalidateQueries({ queryKey: ['compras_cuotas'] })
       queryClient.invalidateQueries({ queryKey: ['estado_compras'] })
       queryClient.invalidateQueries({ queryKey: ['movimientos_compra'] })
 
-      // Invalida disponible de la tarjeta
-      if (variables.tarjeta_id) {
-        queryClient.invalidateQueries({ queryKey: ['disponible_tarjeta', variables.tarjeta_id] })
-      }
+      // El comprometido de la tarjeta sube por el monto total de la compra
+      queryClient.invalidateQueries({ queryKey: ['tarjetas_resumen'] })
 
       // Invalida resúmenes de presupuesto (nueva compra afecta proyecciones)
       queryClient.invalidateQueries({ queryKey: ['resumen'] })

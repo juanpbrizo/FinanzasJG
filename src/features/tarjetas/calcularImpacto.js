@@ -64,6 +64,40 @@ export function calcularImpactoConValidacion(fechaCompra, diaCierre) {
 }
 
 /**
+ * Calcula el primer período de VENCIMIENTO de una compra.
+ * Es el mes de cierre (Regla R2) desplazado por `mesImpactoOffset`:
+ * con offset 1 (default de la tarjeta) el resumen que cierra este mes se paga
+ * el mes siguiente, por lo que la compra nunca impacta el presupuesto actual.
+ * @param {Date|string} fechaCompra
+ * @param {number} diaCierre
+ * @param {number} [mesImpactoOffset=1]
+ * @returns {Date} Fecha del primer período de vencimiento (día = 1)
+ */
+export function calcularPrimerPeriodoImpacto(fechaCompra, diaCierre, mesImpactoOffset = 1) {
+  const offset = Number.isInteger(mesImpactoOffset) ? mesImpactoOffset : 1
+  const cierre = calcularImpacto(parsearFechaLocal(fechaCompra), diaCierre)
+
+  return new Date(cierre.getFullYear(), cierre.getMonth() + offset, 1)
+}
+
+/**
+ * Parsea 'YYYY-MM-DD' como fecha local. `new Date(iso)` la interpreta como UTC
+ * y en husos negativos devuelve el día anterior, corriendo el cálculo de cierre.
+ * @param {Date|string} valor
+ * @returns {Date}
+ */
+export function parsearFechaLocal(valor) {
+  if (typeof valor === 'string') {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor)
+    if (match) {
+      return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    }
+  }
+
+  return valor
+}
+
+/**
  * Genera un array de fechas de período para N cuotas a partir del primer período.
  * Útil para preview de proyección.
  * @param {Date} primerPeriodo - Primer período de impacto

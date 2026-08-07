@@ -70,6 +70,11 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
                           Ajustado
                         </span>
                       )}
+                      {mov.es_sintetica && (
+                        <span className="ml-2 inline-block rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                          Programada
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-2 text-right text-slate-600">
                       {formatCurrency(mov.monto_teorico || mov.monto)}
@@ -92,9 +97,10 @@ export default function ProyeccionCuotasTabla({ movimientos, onCuotaClick }) {
                       <button
                         type="button"
                         onClick={() => onCuotaClick?.(mov)}
+                        disabled={mov.es_sintetica}
                         className="rounded-md px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-100"
                       >
-                        Ajustar
+                        {mov.es_sintetica ? 'Pendiente' : 'Ajustar'}
                       </button>
                     </td>
                   </tr>

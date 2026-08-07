@@ -17,9 +17,10 @@ export default function TarjetasList({ tarjetas, disponibles, onEdit, onDelete, 
     <div className="space-y-3">
       {tarjetas.map((tarjeta) => {
         const disponible = disponibles[tarjeta.id]
-        const porcentajeUso = disponible
-          ? ((disponible.limite_total - disponible.disponible) / disponible.limite_total) * 100
-          : 0
+        const porcentajeUso =
+          disponible && disponible.limite_total > 0
+            ? ((disponible.limite_total - disponible.disponible) / disponible.limite_total) * 100
+            : 0
 
         let varianteBarra = 'bg-green-500'
         if (porcentajeUso > 80) varianteBarra = 'bg-red-500'

@@ -87,6 +87,10 @@ Para este estado del proyecto, aplicar en orden:
 10. `20260806000009_fix_trigger_fondos_mensuales.sql`
 11. `20260806000010_fix_movimientos_insert_403.sql`
 12. `20260806000011_fix_compras_cuotas_400_404.sql`
+13. `20260806000012_liquidacion_dinamica_cuotas.sql`
+
+Las compras en cuotas se registran en `compras_cuotas` y sus movimientos se
+liquidan automaticamente por periodo al inicializar o sincronizar el mes.
 
 ## Correcciones recientes
 

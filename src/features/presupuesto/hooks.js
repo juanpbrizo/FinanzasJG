@@ -86,6 +86,9 @@ export function useMutateInicializarPeriodo() {
       queryClient.invalidateQueries({ queryKey: queryKeys.resumen(periodoId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.fondos(periodoId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.ingresos(periodoId) })
+      queryClient.invalidateQueries({ queryKey: ['fondos_mensuales'] })
+      queryClient.invalidateQueries({ queryKey: ['movimientos_compra'] })
+      queryClient.invalidateQueries({ queryKey: ['estado_compras'] })
     },
   })
 }
@@ -102,6 +105,9 @@ export function useSincronizarFondos() {
       queryClient.invalidateQueries({ queryKey: queryKeys.periodo(periodo) })
       queryClient.invalidateQueries({ queryKey: ['resumen'] })
       queryClient.invalidateQueries({ queryKey: ['fondos'] })
+      queryClient.invalidateQueries({ queryKey: ['fondos_mensuales'] })
+      queryClient.invalidateQueries({ queryKey: ['movimientos_compra'] })
+      queryClient.invalidateQueries({ queryKey: ['estado_compras'] })
       queryClient.invalidateQueries({ queryKey: ['ingresos'] })
     },
   })
@@ -228,6 +234,8 @@ export function useCerrarPeriodo() {
       queryClient.invalidateQueries({ queryKey: queryKeys.periodo(periodo) })
       queryClient.invalidateQueries({ queryKey: ['resumen'] })
       queryClient.invalidateQueries({ queryKey: ['fondos'] })
+      // Las cuotas del periodo cerrado dejan de comprometer limite de tarjeta.
+      queryClient.invalidateQueries({ queryKey: ['tarjetas_resumen'] })
     },
   })
 }
