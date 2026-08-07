@@ -5,7 +5,7 @@ import { createContext } from 'react'
  * @property {import('@supabase/supabase-js').Session | null} session
  * @property {import('@supabase/supabase-js').User | null} user
  * @property {boolean} loading  true mientras se resuelve la sesion inicial
- * @property {(email: string) => Promise<void>} signInWithMagicLink
+ * @property {(email: string, password: string) => Promise<void>} signInWithPassword
  * @property {() => Promise<void>} signOut
  */
 

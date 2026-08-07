@@ -3,26 +3,25 @@ import { getSupabase } from '../../lib/supabase'
 import { queryClient } from '../../lib/queryClient'
 import { AuthContext } from './AuthContext'
 
-const ACCESO_DENEGADO =
-  'Acceso denegado: El correo electronico no esta autorizado para ingresar a esta aplicacion.'
+const CREDENCIALES_INVALIDAS = 'Credenciales incorrectas o usuario no autorizado.'
 
 /**
  * Traduce los errores de Supabase a mensajes accionables.
- * Con `shouldCreateUser: false`, un email no registrado devuelve
- * `otp_disabled` / "Signups not allowed for otp".
+ * Un email inexistente y una contrasena incorrecta devuelven el mismo
+ * mensaje a proposito: no se filtra que cuentas existen.
  */
 function mensajeDeErrorAuth(error) {
   const codigo = error?.code ?? ''
   const detalle = error?.message ?? ''
   if (
-    codigo === 'otp_disabled' ||
+    codigo === 'invalid_credentials' ||
     codigo === 'user_not_found' ||
-    error?.status === 422 ||
-    /signups not allowed|user not found/i.test(detalle)
+    error?.status === 400 ||
+    /invalid login credentials|user not found/i.test(detalle)
   ) {
-    return ACCESO_DENEGADO
+    return CREDENCIALES_INVALIDAS
   }
-  return detalle || 'No se pudo enviar el enlace de acceso.'
+  return detalle || 'No se pudo iniciar sesion.'
 }
 
 /**
@@ -61,18 +60,11 @@ export default function AuthProvider({ children }) {
     }
   }, [])
 
-  const signInWithMagicLink = useCallback(async (email) => {
+  const signInWithPassword = useCallback(async (email, password) => {
     const supabase = getSupabase()
-    // Aplicacion privada: solo pueden ingresar usuarios ya registrados en Supabase.
-    // `emailRedirectTo` se deriva del origen actual para que el enlace apunte al
-    // dominio donde realmente corre la app (produccion o local), nunca a una URL fija.
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false,
-        emailRedirectTo: window.location.origin,
-      },
-    })
+    // Aplicacion privada: las cuentas se crean desde el panel de Supabase.
+    // No hay registro publico ni envio de correos.
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw new Error(mensajeDeErrorAuth(error))
   }, [])
 
@@ -89,10 +81,10 @@ export default function AuthProvider({ children }) {
       session,
       user: session?.user ?? null,
       loading,
-      signInWithMagicLink,
+      signInWithPassword,
       signOut,
     }),
-    [session, loading, signInWithMagicLink, signOut],
+    [session, loading, signInWithPassword, signOut],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
