@@ -15,7 +15,7 @@
 | **Backend** | Supabase (PostgREST + Edge Functions) | Elimina la necesidad de un servidor Node propio. `supabase-js` habla directo con Postgres vía REST con RLS. Menos código, menos deploy. |
 | **Base de Datos** | PostgreSQL (Supabase) | Necesitas transacciones ACID reales (generar 12 cuotas debe ser atómico), tipos `date`, `numeric(14,2)` y constraints. |
 | **Lógica crítica** | Funciones SQL (`plpgsql`) invocadas por RPC | Operaciones multi-tabla (cerrar mes, generar cuotas, transferir fondos) deben ser atómicas. Ver §1.4. |
-| **Auth** | Supabase Auth (email + magic link) | `auth.uid()` se integra nativamente con RLS. Cero backend de sesiones. |
+| **Auth** | Supabase Auth (email + contraseña) | `auth.uid()` se integra nativamente con RLS. Cero backend de sesiones. |
 | **Migraciones** | Supabase CLI (`supabase/migrations/*.sql`) | Versiona el esquema en Git. **Crítico**: hoy el esquema vive solo en la nube, sin historial. |
 | **Routing** | React Router v6 | Rutas: `/`, `/mes/:periodo`, `/tarjetas`, `/configuracion`. |
 
@@ -45,7 +45,7 @@ Tres niveles, sin Redux:
 
 ### 1.4 Estrategia de Autenticación y Seguridad
 
-- **Auth**: `supabase.auth.signInWithOtp()` (magic link) — sin gestión de contraseñas.
+- **Auth**: `supabase.auth.signInWithPassword()` (email + contraseña). App privada: las cuentas se crean manualmente desde el panel de Supabase, sin registro público ni envío de correos.
 - **RLS obligatorio en todas las tablas** desde la Fase 0:
   ```sql
   ALTER TABLE fondos_mensuales ENABLE ROW LEVEL SECURITY;
@@ -336,7 +336,7 @@ Si el usuario quiere propagar el ajuste, debe invocar explícitamente `recalcula
 | 0.6 | Instalar y configurar React Router | Rutas `/login`, `/`, `/mes/:periodo`, `/tarjetas`, `/configuracion` responden | — |
 | 0.7 | Instalar TanStack Query + `QueryClientProvider` | Devtools visibles en dev; un `useQuery` de prueba cachea correctamente | — |
 | 0.8 | Restaurar TailwindCSS | `src/index.css` tiene las 3 directivas `@tailwind`; una clase `bg-indigo-600` renderiza el color | — |
-| 0.9 | Implementar `AuthContext` + pantalla de login | Magic link envía email; tras click, `session` disponible en toda la app; logout funciona | 0.4, 0.6 |
+| 0.9 | Implementar `AuthContext` + pantalla de login | Login con email + contraseña; `session` disponible en toda la app; logout funciona | 0.4, 0.6 |
 | 0.10 | Eliminar `usuarioId` hardcodeado | `grep "00000000-0000"` en `src/` devuelve 0 resultados | 0.9 |
 | 0.11 | Definir estructura de carpetas | Existen `src/features/{presupuesto,tarjetas,ingresos}/`, `src/lib/`, `src/components/ui/` | — |
 | 0.12 | Configurar ESLint + Prettier + pre-commit | `npm run lint` pasa en CI; commit con error de sintaxis JSX es rechazado | — |
