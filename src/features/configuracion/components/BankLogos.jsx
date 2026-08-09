@@ -135,6 +135,17 @@ function RebaLogo({ className = 'h-8 w-8' }) {
   )
 }
 
+function CencosudLogo({ className = 'h-8 w-8' }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="4" fill="currentColor" opacity="0.15" />
+      <text x="16" y="20" fontSize="9" fontWeight="bold" textAnchor="middle" fill="currentColor" fontFamily="sans-serif">
+        CENCO
+      </text>
+    </svg>
+  )
+}
+
 function MercadoPagoLogo({ className = 'h-8 w-8' }) {
   return (
     <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -243,6 +254,8 @@ export function BankLogo({ entidadId, className = 'h-8 w-8' }) {
       return <BrubankLogo className={className} />
     case 'reba':
       return <RebaLogo className={className} />
+    case 'cencosud':
+      return <CencosudLogo className={className} />
     case 'mercado_pago':
       return <MercadoPagoLogo className={className} />
     case 'uala':

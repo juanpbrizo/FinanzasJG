@@ -105,6 +105,14 @@ export const ENTIDADES = {
     textColor: 'text-white',
     accentColor: 'text-amber-200',
   },
+  CENCOSUD: {
+    id: 'cencosud',
+    nombre: 'Cencosud',
+    tipo: 'banco',
+    gradient: 'from-red-700 via-red-800 to-red-950',
+    textColor: 'text-white',
+    accentColor: 'text-red-200',
+  },
 
   // BILLETERAS VIRTUALES / FINTECHS
   MERCADO_PAGO: {

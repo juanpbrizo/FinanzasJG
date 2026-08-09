@@ -4,7 +4,7 @@
 alter table public.tarjetas_credito
 add column entidad text not null default 'santander'
 check (entidad in (
-  'santander', 'bbva', 'galicia', 'macro', 'nacion', 'provincia', 'hsbc', 'icbc', 'ciudad', 'itau', 'brubank', 'reba',
+  'santander', 'bbva', 'galicia', 'macro', 'nacion', 'provincia', 'hsbc', 'icbc', 'ciudad', 'itau', 'brubank', 'reba', 'cencosud',
   'mercado_pago', 'uala', 'naranja_x', 'personal_pay', 'lemon_cash', 'belo', 'prex'
 ));
 
