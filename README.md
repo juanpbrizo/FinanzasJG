@@ -31,9 +31,14 @@ La aplicación está optimizada para dispositivos móviles con:
 - **Edicion y eliminacion de gastos** de cualquier periodo abierto, desde el detalle de cada fondo
 - Transferencias entre fondos
 - Cierre de mes
-- Tarjetas de credito y compras en cuotas
+- **Tarjetas de credito con marca personal**: 19 bancos/billeteras + 6 redes de pago con logotipos SVG y colores corporativos reales
+  - ENTIDADES: Santander, BBVA, Galicia, Macro, Nación, Provincia, HSBC, ICBC, Ciudad, Itaú, Brubank, Reba, Cencosud, Mercado Pago, Uala, Naranja X, Personal Pay, Lemon Cash, Belo, Prex
+  - MARCAS: Visa, Mastercard, Amex, Cabal, Naranja, Otra
+- Compras en cuotas con liquidación automática
 - **Suscripciones recurrentes** (Netflix, Spotify, etc) - liquidación automática con frecuencias variables
 - Dashboard de analytics anual con exportación CSV
+- **Orden alfabético global (A-Z)** en todas las listas: Fondos, Categorías, Tarjetas, Bancos, Billeteras y selectores
+- **Visualización compacta de saldos** en formato ecuación: `$ Límite - $ Gastado = $ Disponible` con código de colores (gris - rojo = verde/rojo)
 
 ## Requisitos
 
@@ -105,6 +110,8 @@ Para este estado del proyecto, aplicar en orden:
 15. `20260807000001_fix_suscripciones_default_usuario_id.sql` - RLS correction
 16. `20260807000002_fix_suscripciones_categoria_plantilla.sql` - Schema fix
 17. `20260807000003_editar_eliminar_movimientos.sql` - Bloqueo de DELETE en periodos cerrados
+18. `20260809000000_agregar_marca_tarjeta.sql` - Agregar red de pago (Visa, Mastercard, Amex, etc) a tarjetas
+19. `20260809000001_agregar_entidad_tarjeta.sql` - Agregar banco/billetera emisor a tarjetas con colores corporativos
 
 ### Detalle de gastos por fondo
 
@@ -142,6 +149,23 @@ liquidan automaticamente por periodo al inicializar o sincronizar el mes.
 
 ## Correcciones y mejoras recientes
 
+- **Personalización de marca en tarjetas** (Agosto 2026):
+  - Agregadas 19 instituciones financieras: 13 bancos locales (Santander, BBVA, Galicia, Macro, Nación, Provincia, HSBC, ICBC, Ciudad, Itaú, Brubank, Reba, Cencosud) + 6 billeteras virtuales (Mercado Pago, Uala, Naranja X, Personal Pay, Lemon Cash, Belo, Prex)
+  - Agregadas 6 redes de pago: Visa, Mastercard, Amex, Cabal, Naranja, Otra
+  - Diseño de tarjeta con proporción real (1.586:1), 3 logos (banco top-left, chip top-right, marca bottom-right)
+  - Colores corporativos únicos por institución con gradientes (bg + dark)
+  - Formulario mejorado con selectores duales banco/marca
+  - Logos SVG nativos con fallback para marcas desconocidas
+- **Orden alfabético global (A-Z)** en todas las listas del sistema:
+  - Fondos mensuales ordenados por nombre
+  - Fondos plantilla ordenados por nombre
+  - Categorías ordenadas alfabéticamente dentro de cada fondo
+  - Tarjetas ordenadas por nombre
+  - Todos los selectores (banco, marca, categoría, fondo) heredan el orden automáticamente
+- **Formato compacto de saldos en tarjetas de fondos**:
+  - Reemplazo de 3 líneas verticales por una ecuación horizontal: `$ Límite - $ Gastado = $ Disponible`
+  - Código de colores claro: gris (límite) - rojo (gastado) = verde (disponible) / rojo (sobregiro)
+  - Interfaz más compacta y móvil-friendly, mejor lectura a simple vista
 - Se corrigio el INSERT de gastos para adjuntar `usuario_id` y resolver el 403 en `movimientos`.
 - Se ajusto el flujo de compras en cuotas para evitar 400 por payload invalido y 404 en la vista de estado/proyeccion.
 - Implementado módulo completo de **Suscripciones Recurrentes** con:
