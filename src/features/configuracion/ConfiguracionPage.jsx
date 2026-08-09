@@ -21,6 +21,7 @@ import {
   useCrearTarjeta,
   useActualizarTarjeta,
   useEliminarTarjeta,
+  useResumenTarjetas,
 } from '../tarjetas/hooks'
 
 export default function ConfiguracionPage() {
@@ -40,6 +41,7 @@ export default function ConfiguracionPage() {
 
   // Tarjetas
   const { data: tarjetas, isLoading: tarjetasLoading, error: tarjetasError } = useTarjetas()
+  const { data: resumenTarjetas } = useResumenTarjetas()
   const crearTarjeta = useCrearTarjeta()
   const actualizarTarjeta = useActualizarTarjeta()
   const eliminarTarjeta = useEliminarTarjeta()
@@ -177,11 +179,12 @@ export default function ConfiguracionPage() {
 
       {/* Listado */}
       {tarjetas && tarjetas.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 place-items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
           {tarjetas.map((tarjeta) => (
             <TarjetaCreditoCard
               key={tarjeta.id}
               tarjeta={tarjeta}
+              resumen={resumenTarjetas?.[tarjeta.id] || { limite_total: tarjeta.limite_total, comprometido: 0, disponible: tarjeta.limite_total }}
               onEdit={(t) => {
                 setTarjetaEnEdicion(t)
                 setShowCreateTarjetaModal(true)
