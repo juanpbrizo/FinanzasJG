@@ -213,6 +213,13 @@ export const MARCAS = {
     textColor: 'text-white',
     accentColor: 'text-orange-200',
   },
+  OTRA: {
+    id: 'otra',
+    nombre: 'Otra',
+    gradient: 'from-slate-900 via-slate-800 to-slate-950',
+    textColor: 'text-white',
+    accentColor: 'text-slate-300',
+  },
 }
 
 // ============================================================================
