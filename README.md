@@ -25,7 +25,7 @@ La aplicación está optimizada para dispositivos móviles con:
 - Acceso restringido por invitacion (email + contrasena, sin registro publico)
 - Gestion de periodos mensuales (`/mes/:periodo`)
 - Ingresos del periodo (crear, editar, eliminar)
-- Fondos y categorias de plantilla (`/configuracion`)
+- **Plantilla de Fondos y Categorías** con rediseño modal + tarjetas en grilla tipo "sobres presupuestarios"
 - Sincronizacion de plantilla hacia el mes activo
 - Registro de gastos por categoria con **selector en cascada Fondo → Categoria**
 - **Edicion y eliminacion de gastos** de cualquier periodo abierto, desde el detalle de cada fondo
