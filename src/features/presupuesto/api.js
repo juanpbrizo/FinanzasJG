@@ -267,6 +267,23 @@ export async function crearCategoriaPlantilla(payload) {
 }
 
 /**
+ * Actualiza un fondo de la plantilla.
+ * @param {string} fondoId
+ * @param {object} payload - { nombre, monto_sugerido, tipo }
+ */
+export async function actualizarFondoPlantilla(fondoId, payload) {
+  const supabase = getSupabase()
+  const { data, error } = await supabase
+    .from('fondos_plantilla')
+    .update(payload)
+    .eq('id', fondoId)
+    .select()
+
+  if (error) throw error
+  return data[0]
+}
+
+/**
  * Elimina un fondo plantilla y sus categorias asociadas.
  */
 export async function eliminarFondoPlantilla(fondoId) {

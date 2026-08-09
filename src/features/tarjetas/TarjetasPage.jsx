@@ -1,77 +1,40 @@
-import { useMemo, useState } from 'react'
-import Spinner from '../../components/ui/Spinner'
-import Modal from '../../components/ui/Modal'
-import TarjetaForm from './components/TarjetaForm'
-import TarjetasList from './components/TarjetasList'
-import CompraCuotasForm from './components/CompraCuotasForm'
-import ProyeccionCuotasTabla from './components/ProyeccionCuotasTabla'
-import CuotaEditModal from './components/CuotaEditModal'
-import { construirProyeccionCuotas } from './proyeccion'
+import { useMemo, useState } from "react"
+import { Plus } from "lucide-react"
+import Spinner from "../../components/ui/Spinner"
+import ProyeccionCuotasTabla from "./components/ProyeccionCuotasTabla"
+import CuotaEditModal from "./components/CuotaEditModal"
+import CreateCompraTarjetaModal from "./components/CreateCompraTarjetaModal"
+import { construirProyeccionCuotas } from "./proyeccion"
 import {
   useTarjetas,
-  useCrearTarjeta,
-  useActualizarTarjeta,
-  useEliminarTarjeta,
-  useResumenTarjetas,
   useComprasCuotas,
   useRegistrarCompraCuotas,
   useMovimientosDeCompras,
   useActualizarCuotaIndividual,
   useRecalcularCuotasPendientes,
-} from './hooks'
-import { useFondosPlantilla } from '../presupuesto/hooks'
+} from "./hooks"
+import { useFondosPlantilla } from "../presupuesto/hooks"
 
 export default function TarjetasPage() {
-  const [tarjetaEnEdicion, setTarjetaEnEdicion] = useState(null)
+  const [showCompraCuotasModal, setShowCompraCuotasModal] = useState(false)
   const [showCuotaModal, setShowCuotaModal] = useState(false)
   const [cuotaSeleccionada, setCuotaSeleccionada] = useState(null)
 
-  // Queries
   const { data: tarjetas, isLoading: tarjetasLoading } = useTarjetas()
   const { data: comprasCuotas, isLoading: comprasLoading } = useComprasCuotas()
   const { data: fondosPlantilla } = useFondosPlantilla()
 
-  // Mutations
-  const crearTarjeta = useCrearTarjeta()
-  const actualizarTarjeta = useActualizarTarjeta()
-  const eliminarTarjeta = useEliminarTarjeta()
   const registrarCompraCuotas = useRegistrarCompraCuotas()
   const ajustarCuota = useActualizarCuotaIndividual()
   const recalcularSaldo = useRecalcularCuotasPendientes()
 
-  // Disponible por tarjeta y movimientos de cada compra.
-  // Los movimientos se resuelven con useQueries: la cantidad de compras es
-  // variable y llamar useQuery dentro de un forEach rompe las Rules of Hooks.
   const compraIds = useMemo(() => comprasCuotas?.map((c) => c.id) ?? [], [comprasCuotas])
 
-  const { data: disponibles } = useResumenTarjetas()
   const todoMovimientos = useMovimientosDeCompras(compraIds)
   const movimientosProyectados = useMemo(
     () => construirProyeccionCuotas(comprasCuotas ?? [], todoMovimientos ?? []),
     [comprasCuotas, todoMovimientos],
   )
-
-  const handleCrearTarjeta = async (payload) => {
-    await crearTarjeta.mutateAsync(payload)
-  }
-
-  const handleEditarTarjeta = (tarjeta) => {
-    setTarjetaEnEdicion(tarjeta)
-  }
-
-  const handleActualizarTarjeta = async (payload) => {
-    await actualizarTarjeta.mutateAsync({
-      tarjetaId: tarjetaEnEdicion.id,
-      payload,
-    })
-    setTarjetaEnEdicion(null)
-  }
-
-  const handleEliminarTarjeta = async (tarjetaId) => {
-    if (confirm('¿Eliminar esta tarjeta?')) {
-      await eliminarTarjeta.mutateAsync(tarjetaId)
-    }
-  }
 
   const handleRegistrarCompraCuotas = async (payload) => {
     await registrarCompraCuotas.mutateAsync(payload)
@@ -98,77 +61,48 @@ export default function TarjetasPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Sección: Gestión de Tarjetas */}
       <section>
-        <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">Mis Tarjetas de Crédito</h2>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Formulario de alta */}
-          <div>
-            <h3 className="mb-3 text-base sm:text-lg font-semibold text-slate-900">
-              Agregar nueva tarjeta
-            </h3>
-            <TarjetaForm onSubmit={handleCrearTarjeta} isLoading={crearTarjeta.isPending} />
-          </div>
-
-          {/* Lista de tarjetas */}
-          <div>
-            <h3 className="mb-3 text-base sm:text-lg font-semibold text-slate-900">Tarjetas registradas</h3>
-            <TarjetasList
-              tarjetas={tarjetas}
-              disponibles={disponibles ?? {}}
-              onEdit={handleEditarTarjeta}
-              onDelete={handleEliminarTarjeta}
-              isLoading={eliminarTarjeta.isPending}
-            />
-          </div>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+            Registro de Compras en Cuotas
+          </h2>
+          <button
+            onClick={() => setShowCompraCuotasModal(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            title="Registrar nuevo cargo"
+          >
+            <Plus className="h-5 w-5" />
+            <span className="sr-only">Registrar cargo</span>
+          </button>
         </div>
-      </section>
 
-      {/* Modal de edición de tarjeta */}
-      <Modal
-        isOpen={Boolean(tarjetaEnEdicion)}
-        onClose={() => setTarjetaEnEdicion(null)}
-        title="Editar tarjeta"
-      >
-        {/* `key` remonta el form para que precargue los datos de la tarjeta elegida */}
-        <TarjetaForm
-          key={tarjetaEnEdicion?.id}
-          tarjetaInicial={tarjetaEnEdicion}
-          onSubmit={handleActualizarTarjeta}
-          onCancel={() => setTarjetaEnEdicion(null)}
-          isLoading={actualizarTarjeta.isPending}
-        />
-      </Modal>
-
-      {/* Sección: Compras en Cuotas */}
-      <section>
-        <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">Registrar Compra en Cuotas</h2>
-        <CompraCuotasForm
-          tarjetas={tarjetas}
-          fondosPlantilla={fondosPlantilla}
+        <CreateCompraTarjetaModal
+          isOpen={showCompraCuotasModal}
+          onClose={() => setShowCompraCuotasModal(false)}
           onSubmit={handleRegistrarCompraCuotas}
           isLoading={registrarCompraCuotas.isPending}
+          tarjetas={tarjetas}
+          fondosPlantilla={fondosPlantilla}
         />
       </section>
 
-      {/* Sección: Proyección de Cuotas */}
       {movimientosProyectados.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">Proyección de Cuotas (12 meses)</h2>
+          <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">
+            Proyeccion de Cuotas (12 meses)
+          </h2>
           <ProyeccionCuotasTabla
             movimientos={movimientosProyectados}
             onCuotaClick={handleSeleccionarCuota}
           />
           <p className="mt-2 text-xs text-slate-600">
-            Usa el botón “Ajustar” de cada cuota para modificarla o recalcular el saldo pendiente.
+            Usa el boton "Ajustar" de cada cuota para modificarla o recalcular el saldo pendiente.
           </p>
         </section>
       )}
 
-      {/* Modal de edición de cuota */}
       <CuotaEditModal
-        key={cuotaSeleccionada?.id ?? 'sin-cuota'}
+        key={cuotaSeleccionada?.id ?? "sin-cuota"}
         isOpen={showCuotaModal}
         onClose={() => {
           setShowCuotaModal(false)
@@ -183,3 +117,4 @@ export default function TarjetasPage() {
     </div>
   )
 }
+

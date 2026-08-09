@@ -210,6 +210,21 @@ export function useCrearCategoriaPlantilla() {
 }
 
 /**
+ * Actualiza un fondo de la plantilla.
+ * Invalida la lista de fondos plantilla.
+ */
+export function useActualizarFondoPlantilla() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ fondoId, payload }) => api.actualizarFondoPlantilla(fondoId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fondosPlantilla() })
+    },
+  })
+}
+
+/**
  * Elimina un fondo plantilla.
  */
 export function useEliminarFondoPlantilla() {

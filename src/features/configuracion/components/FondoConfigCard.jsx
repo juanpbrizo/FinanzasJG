@@ -10,12 +10,19 @@ import Input from '../../../components/ui/Input'
 export default function FondoConfigCard({
   fondo,
   onDelete,
+  onUpdate,
   onCreateCategoria,
   onDeleteCategoria,
   isLoading,
 }) {
   const [showCategoriaForm, setShowCategoriaForm] = useState(false)
   const [categoriaNombre, setCategoriaNombre] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState({
+    nombre: fondo.nombre,
+    monto_sugerido: String(fondo.monto_sugerido ?? ''),
+    tipo: fondo.tipo,
+  })
 
   const handleCrearCategoria = async (e) => {
     e.preventDefault()
@@ -25,6 +32,35 @@ export default function FondoConfigCard({
     })
     setCategoriaNombre('')
     setShowCategoriaForm(false)
+  }
+
+  const abrirEdicion = () => {
+    setEditData({
+      nombre: fondo.nombre,
+      monto_sugerido: String(fondo.monto_sugerido ?? ''),
+      tipo: fondo.tipo,
+    })
+    setIsEditing(true)
+  }
+
+  const handleGuardarEdicion = (e) => {
+    e.preventDefault()
+    const monto = Number(editData.monto_sugerido)
+    if (!editData.nombre.trim() || !Number.isFinite(monto) || monto < 0) return
+    onUpdate(fondo.id, {
+      nombre: editData.nombre.trim(),
+      monto_sugerido: monto,
+      tipo: editData.tipo,
+    })
+    setIsEditing(false)
+  }
+
+  const handleEliminar = () => {
+    const aviso =
+      categoriaCount > 0
+        ? `Se eliminará "${fondo.nombre}" y sus ${categoriaCount} categoría(s). ¿Continuar?`
+        : `¿Eliminar el fondo "${fondo.nombre}"?`
+    if (confirm(aviso)) onDelete(fondo.id)
   }
 
   // Badge de color según tipo
@@ -46,6 +82,67 @@ export default function FondoConfigCard({
 
   const categoriaCount = fondo.categorias_plantilla?.length ?? 0
 
+  if (isEditing) {
+    return (
+      <div className="rounded-xl bg-white p-5 shadow-md ring-2 ring-slate-900 transition-all">
+        <form onSubmit={handleGuardarEdicion} className="space-y-3">
+          <Input
+            id={`edit-nombre-${fondo.id}`}
+            label="Nombre"
+            value={editData.nombre}
+            onChange={(e) => setEditData((prev) => ({ ...prev, nombre: e.target.value }))}
+            required
+            autoFocus
+          />
+          <Input
+            id={`edit-monto-${fondo.id}`}
+            type="number"
+            label="Monto sugerido"
+            value={editData.monto_sugerido}
+            onChange={(e) =>
+              setEditData((prev) => ({ ...prev, monto_sugerido: e.target.value }))
+            }
+            step="0.01"
+            min="0"
+          />
+          <div>
+            <label
+              htmlFor={`edit-tipo-${fondo.id}`}
+              className="mb-1.5 block text-sm font-medium text-slate-700"
+            >
+              Tipo
+            </label>
+            <select
+              id={`edit-tipo-${fondo.id}`}
+              className="block w-full rounded-md border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-slate-900 sm:text-sm"
+              value={editData.tipo}
+              onChange={(e) => setEditData((prev) => ({ ...prev, tipo: e.target.value }))}
+            >
+              <option value="gasto">Gasto</option>
+              <option value="ahorro">Ahorro</option>
+              <option value="inversion">Inversión</option>
+              <option value="deuda">Deuda</option>
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <Button type="submit" disabled={isLoading} className="flex-1 text-sm">
+              Guardar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEditing(false)}
+              disabled={isLoading}
+              className="flex-1 text-sm"
+            >
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-md transition-all">
       {/* Encabezado: nombre + tipo + acciones */}
@@ -56,7 +153,16 @@ export default function FondoConfigCard({
         </div>
         <div className="flex shrink-0 gap-1">
           <button
-            onClick={() => onDelete(fondo.id)}
+            onClick={abrirEdicion}
+            disabled={isLoading}
+            title="Editar fondo"
+            className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+          >
+            <Pencil className="h-4 w-4" />
+            <span className="sr-only">Editar</span>
+          </button>
+          <button
+            onClick={handleEliminar}
             disabled={isLoading}
             title="Eliminar fondo"
             className="rounded p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"

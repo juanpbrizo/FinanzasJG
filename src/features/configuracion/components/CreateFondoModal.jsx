@@ -20,17 +20,25 @@ export default function CreateFondoModal({ isOpen, onClose, onSubmit, isLoading 
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await onSubmit({
-      ...formData,
-      monto_sugerido: parseFloat(formData.monto_sugerido),
-    })
-    setFormData({ nombre: '', monto_sugerido: '', tipo: 'gasto' })
+    try {
+      await onSubmit({
+        ...formData,
+        // parseFloat('') es NaN y se serializa como null, lo que viola el
+        // not null de monto_sugerido. Se normaliza a 0.
+        monto_sugerido: Number.parseFloat(formData.monto_sugerido) || 0,
+      })
+      // Solo se limpia si la mutacion fue exitosa, para no perder lo tipeado.
+      setFormData({ nombre: '', monto_sugerido: '', tipo: 'gasto' })
+    } catch {
+      // El error ya se muestra via toast en ConfiguracionPage.
+    }
   }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Crear Fondo">
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
+          id="fondo-nombre"
           name="nombre"
           label="Nombre del Fondo"
           placeholder="Ej: Hogar, Ocio, etc"
@@ -41,6 +49,7 @@ export default function CreateFondoModal({ isOpen, onClose, onSubmit, isLoading 
         />
 
         <Input
+          id="fondo-monto-sugerido"
           name="monto_sugerido"
           type="number"
           label="Monto Sugerido ($)"
