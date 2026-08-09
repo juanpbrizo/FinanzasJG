@@ -42,9 +42,17 @@ export async function obtenerFondosMensuales(periodoId) {
       )`
     )
     .eq('periodo_id', periodoId)
-    .order('prioridad', { ascending: true })
+    .order('nombre', { ascending: true })
 
   if (error) throw error
+  // Ordenar categorías alfabéticamente dentro de cada fondo
+  if (data) {
+    data.forEach(fondo => {
+      if (fondo.categorias_mensuales) {
+        fondo.categorias_mensuales.sort((a, b) => a.nombre.localeCompare(b.nombre))
+      }
+    })
+  }
   return data || []
 }
 
@@ -238,9 +246,17 @@ export async function obtenerFondosPlantilla() {
     .from('fondos_plantilla')
     .select('*, categorias_plantilla(*)')
     .eq('activo', true)
-    .order('prioridad', { ascending: true })
+    .order('nombre', { ascending: true })
 
   if (error) throw error
+  // Ordenar categorías alfabéticamente dentro de cada fondo
+  if (data) {
+    data.forEach(fondo => {
+      if (fondo.categorias_plantilla) {
+        fondo.categorias_plantilla.sort((a, b) => a.nombre.localeCompare(b.nombre))
+      }
+    })
+  }
   return data || []
 }
 

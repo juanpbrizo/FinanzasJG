@@ -14,7 +14,7 @@ export async function obtenerTarjetas() {
   const { data, error } = await supabase
     .from('tarjetas_credito')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('nombre', { ascending: true })
 
   if (error) throw error
   return data || []

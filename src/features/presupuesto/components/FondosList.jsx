@@ -12,6 +12,7 @@ function FondoCard({ fondo, onUpdatePresupuesto, onVerGastos, isLocked, isSaving
   }, 0) ?? 0
 
   const presupuesto = fondo.monto_presupuestado ?? 0
+  const disponible = Math.max(0, presupuesto - gastoTotal)
   const porcentaje = presupuesto > 0 ? (gastoTotal / presupuesto) * 100 : 0
   const esAlerta = porcentaje > 100
 
@@ -30,11 +31,24 @@ function FondoCard({ fondo, onUpdatePresupuesto, onVerGastos, isLocked, isSaving
   return (
     <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h4 className="font-semibold text-slate-900">{fondo.nombre}</h4>
-          <p className="text-sm text-slate-500">
-            {formatCurrency(gastoTotal)} de {formatCurrency(presupuesto)}
-          </p>
+          <div className="mt-2 space-y-1 text-sm">
+            <div className="flex justify-between text-slate-600">
+              <span>Gastado:</span>
+              <span className="font-medium">{formatCurrency(gastoTotal)}</span>
+            </div>
+            <div className="flex justify-between text-slate-600">
+              <span>Límite:</span>
+              <span className="font-medium">{formatCurrency(presupuesto)}</span>
+            </div>
+            <div className={`flex justify-between rounded px-2 py-1 ${disponible > 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+              <span className={disponible > 0 ? 'text-green-700' : 'text-red-700'}>Disponible:</span>
+              <span className={`font-semibold ${disponible > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                {formatCurrency(disponible)}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
