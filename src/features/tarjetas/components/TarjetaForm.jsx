@@ -4,7 +4,7 @@ import Input from '../../../components/ui/Input'
 
 /**
  * TarjetaForm: Formulario para crear/editar tarjeta de crédito.
- * Campos: nombre, limite_total, dia_cierre, dia_vencimiento.
+ * Campos: nombre, limite_total, dia_cierre, dia_vencimiento, marca.
  *
  * El estado inicial se toma de `tarjetaInicial` al montar. Para reutilizarlo
  * con otra tarjeta hay que remontarlo (prop `key`), como hace TarjetasPage.
@@ -14,6 +14,7 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoad
   const [limitTotal, setLimitTotal] = useState(tarjetaInicial?.limite_total || '')
   const [diaCierre, setDiaCierre] = useState(tarjetaInicial?.dia_cierre || '')
   const [diaVencimiento, setDiaVencimiento] = useState(tarjetaInicial?.dia_vencimiento || '')
+  const [marca, setMarca] = useState(tarjetaInicial?.marca || 'OTRA')
   const [error, setError] = useState('')
   const esEdicion = Boolean(tarjetaInicial)
 
@@ -45,12 +46,14 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoad
         limite_total: parseFloat(limitTotal),
         dia_cierre: diaCierreNum,
         dia_vencimiento: diaVencimientoNum,
+        marca,
       })
       if (!esEdicion) {
         setNombre('')
         setLimitTotal('')
         setDiaCierre('')
         setDiaVencimiento('')
+        setMarca('OTRA')
       }
     } catch (err) {
       setError(err.message || 'Error al guardar la tarjeta')
@@ -104,6 +107,20 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoad
             max="31"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-900">Marca de tarjeta</label>
+        <select
+          value={marca}
+          onChange={(e) => setMarca(e.target.value)}
+          className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+        >
+          <option value="VISA">Visa</option>
+          <option value="MASTERCARD">Mastercard</option>
+          <option value="AMEX">American Express</option>
+          <option value="OTRA">Otra</option>
+        </select>
       </div>
 
       {error && <div className="rounded bg-red-50 p-2 text-sm text-red-700">{error}</div>}

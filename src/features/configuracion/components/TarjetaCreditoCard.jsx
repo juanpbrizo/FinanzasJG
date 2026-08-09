@@ -1,8 +1,10 @@
 import { Edit2, Trash2 } from 'lucide-react'
+import { getCardStyle } from './cardStylesConfig'
+import { BrandLogo } from './CardBrands'
 
 /**
  * TarjetaCreditoCard: Simula el aspecto de una tarjeta de crédito real.
- * Diseño: gradiente sutil, chip, nombre, límite, fechas de cierre y vencimiento.
+ * Diseño: gradiente según marca, chip, nombre, límite, fechas de cierre y vencimiento.
  * Muestra: Límite total, monto consumido en cuotas, límite disponible, barra de progreso.
  */
 export default function TarjetaCreditoCard({ tarjeta, resumen, onEdit, onDelete, isLoading }) {
@@ -13,10 +15,13 @@ export default function TarjetaCreditoCard({ tarjeta, resumen, onEdit, onDelete,
   const porcentajeUsado = limite_total > 0 ? (comprometido / limite_total) * 100 : 0
   const esAlerta = porcentajeUsado > 80
 
-  // Gradiente simple según disponibilidad o tipo
+  const marca = tarjeta.marca || 'OTRA'
+  const { gradient: gradientBase } = getCardStyle(marca)
+
+  // Gradiente dinámico según marca o alerta
   const getGradient = () => {
     if (esAlerta) return 'from-orange-600 to-orange-800'
-    return 'from-blue-600 to-blue-800'
+    return gradientBase
   }
 
   const getChipColor = () => 'bg-amber-300'
@@ -99,10 +104,17 @@ export default function TarjetaCreditoCard({ tarjeta, resumen, onEdit, onDelete,
             <p className="opacity-70">Cierre</p>
             <p className="font-semibold">{String(tarjeta.dia_cierre).padStart(2, '0')}</p>
           </div>
+          <div className="flex-1" />
+          {/* Logo de marca en esquina inferior derecha */}
           <div className="text-right">
-            <p className="opacity-70">Vencimiento</p>
-            <p className="font-semibold">{String(tarjeta.dia_vencimiento).padStart(2, '0')}</p>
+            <BrandLogo marca={marca} className="h-6 w-8 ml-auto" />
           </div>
+        </div>
+
+        {/* Información de vencimiento (línea adicional si es necesario) */}
+        <div className="text-right text-xs pt-1">
+          <p className="opacity-70">Vencimiento</p>
+          <p className="font-semibold">{String(tarjeta.dia_vencimiento).padStart(2, '0')}</p>
         </div>
       </div>
     </div>
