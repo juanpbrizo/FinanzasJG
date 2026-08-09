@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Spinner from '../../components/ui/Spinner'
+import Modal from '../../components/ui/Modal'
 import SuscripcionesForm from './components/SuscripcionesForm'
 import SuscripcionesList from './components/SuscripcionesList'
 import {
@@ -101,7 +102,7 @@ export default function SuscripcionesPage() {
       {/* Sección: Gestión */}
       <section>
         <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">
-          {suscripcionEnEdicion ? 'Editar suscripción' : 'Crear suscripción recurrente'}
+          Crear suscripción recurrente
         </h2>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -110,21 +111,9 @@ export default function SuscripcionesPage() {
             <SuscripcionesForm
               tarjetas={tarjetas}
               categorias={categorias}
-              suscripcionInicial={suscripcionEnEdicion}
-              onSubmit={suscripcionEnEdicion ? handleActualizarSuscripcion : handleCrearSuscripcion}
-              isLoading={
-                crearSuscripcion.isPending ||
-                actualizarSuscripcion.isPending
-              }
+              onSubmit={handleCrearSuscripcion}
+              isLoading={crearSuscripcion.isPending}
             />
-            {suscripcionEnEdicion && (
-              <button
-                onClick={() => setSuscripcionEnEdicion(null)}
-                className="mt-2 w-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded"
-              >
-                Cancelar edición
-              </button>
-            )}
           </div>
 
           {/* Lista */}
@@ -145,6 +134,25 @@ export default function SuscripcionesPage() {
           </div>
         </div>
       </section>
+
+      {/* Modal de edición: el `key` remonta el formulario para que precargue */}
+      <Modal
+        isOpen={Boolean(suscripcionEnEdicion)}
+        onClose={() => setSuscripcionEnEdicion(null)}
+        title="Editar suscripción"
+      >
+        {suscripcionEnEdicion && (
+          <SuscripcionesForm
+            key={suscripcionEnEdicion.id}
+            tarjetas={tarjetas}
+            categorias={categorias}
+            suscripcionInicial={suscripcionEnEdicion}
+            onSubmit={handleActualizarSuscripcion}
+            onCancel={() => setSuscripcionEnEdicion(null)}
+            isLoading={actualizarSuscripcion.isPending}
+          />
+        )}
+      </Modal>
     </div>
   )
 }

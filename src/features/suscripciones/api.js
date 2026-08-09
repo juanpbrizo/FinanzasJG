@@ -129,6 +129,22 @@ export async function actualizarSuscripcion(suscripcionId, payload) {
     update.activa = Boolean(payload.activa)
   }
 
+  if ('tarjeta_id' in payload) {
+    const tarjeta_id = payload.tarjeta_id?.trim()
+    if (!tarjeta_id || !RE_UUID.test(tarjeta_id)) {
+      throw new Error('Seleccioná una tarjeta válida')
+    }
+    update.tarjeta_id = tarjeta_id
+  }
+
+  if ('categoria_plantilla_id' in payload) {
+    const categoria_plantilla_id = payload.categoria_plantilla_id?.trim() || null
+    if (categoria_plantilla_id && !RE_UUID.test(categoria_plantilla_id)) {
+      throw new Error('Seleccioná una categoría válida')
+    }
+    update.categoria_plantilla_id = categoria_plantilla_id
+  }
+
   if ('frecuencia' in payload) {
     const frecuencia = payload.frecuencia?.toUpperCase()
     if (!['MENSUAL', 'BIMESTRAL', 'TRIMESTRAL', 'SEMESTRAL', 'ANUAL'].includes(frecuencia)) {

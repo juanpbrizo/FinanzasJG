@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Check, Pencil, X } from 'lucide-react'
 import { formatCurrency } from '../../../lib/formatters'
 
-function FondoCard({ fondo, onUpdatePresupuesto, isLocked, isSaving }) {
+function FondoCard({ fondo, onUpdatePresupuesto, onVerGastos, isLocked, isSaving }) {
   const [isEditing, setIsEditing] = useState(false)
   const [valor, setValor] = useState('')
 
@@ -37,9 +37,14 @@ function FondoCard({ fondo, onUpdatePresupuesto, isLocked, isSaving }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-slate-600 bg-slate-100 rounded px-2 py-1">
+          <button
+            type="button"
+            onClick={() => onVerGastos?.(fondo)}
+            title={`Ver gastos de ${fondo.nombre}`}
+            className="cursor-pointer rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+          >
             {fondo.tipo}
-          </span>
+          </button>
           {!isLocked && !isEditing && (
             <button
               type="button"
@@ -113,7 +118,13 @@ function FondoCard({ fondo, onUpdatePresupuesto, isLocked, isSaving }) {
   )
 }
 
-export default function FondosList({ fondos, onUpdatePresupuesto, isLocked, isSaving }) {
+export default function FondosList({
+  fondos,
+  onUpdatePresupuesto,
+  onVerGastos,
+  isLocked,
+  isSaving,
+}) {
   if (!fondos || fondos.length === 0) {
     return (
       <div className="rounded-lg bg-slate-50 p-6 text-center text-sm text-slate-600">
@@ -130,6 +141,7 @@ export default function FondosList({ fondos, onUpdatePresupuesto, isLocked, isSa
           key={fondo.id}
           fondo={fondo}
           onUpdatePresupuesto={onUpdatePresupuesto}
+          onVerGastos={onVerGastos}
           isLocked={isLocked}
           isSaving={isSaving}
         />

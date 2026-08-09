@@ -18,13 +18,29 @@ export async function inicializarPeriodo(periodo, arrastrarSaldos = true) {
 
 /**
  * Carga el periodo: sus fondos mensuales y categorias.
+ * Se traen los movimientos con su detalle porque la pantalla del mes los lista
+ * para editar/eliminar; asi el gasto por fondo y la lista salen de la misma query.
  * Filtra por periodo_id y usuario (garantizado por RLS).
  */
 export async function obtenerFondosMensuales(periodoId) {
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('fondos_mensuales')
-    .select('*, categorias_mensuales(*, movimientos(monto))')
+    .select(
+      `*, categorias_mensuales(
+        *,
+        movimientos(
+          id,
+          descripcion,
+          monto,
+          fecha_transaccion,
+          medio_pago,
+          compra_cuota_id,
+          numero_cuota,
+          total_cuotas
+        )
+      )`
+    )
     .eq('periodo_id', periodoId)
     .order('prioridad', { ascending: true })
 
@@ -143,6 +159,59 @@ export async function crearGasto(payload) {
 
   if (error) throw error
   return data[0]
+}
+
+/**
+ * Edita un gasto ya registrado.
+ * El periodo cerrado lo rechaza el trigger `tr_bloquear_cambios_movimientos_cerrado`
+ * (Regla R5); aca solo se validan los datos del formulario.
+ * @param {string} movimientoId
+ * @param {object} payload - { categoria_mensual_id, descripcion, monto, fecha_transaccion, medio_pago }
+ */
+export async function actualizarGasto(movimientoId, payload) {
+  const supabase = getSupabase()
+
+  const monto = Number(payload.monto)
+  const camposFaltantes = [
+    ['categoría', payload.categoria_mensual_id],
+    ['descripción', payload.descripcion?.trim()],
+    ['fecha', payload.fecha_transaccion],
+  ]
+    .filter(([, value]) => !value)
+    .map(([name]) => name)
+
+  if (camposFaltantes.length > 0) {
+    throw new Error(`Faltan datos obligatorios: ${camposFaltantes.join(', ')}.`)
+  }
+  if (!Number.isFinite(monto) || monto <= 0) {
+    throw new Error('El monto debe ser un número mayor a 0.')
+  }
+
+  const { data, error } = await supabase
+    .from('movimientos')
+    .update({
+      categoria_mensual_id: payload.categoria_mensual_id,
+      descripcion: payload.descripcion.trim(),
+      monto,
+      fecha_transaccion: payload.fecha_transaccion,
+      medio_pago: payload.medio_pago || 'efectivo',
+    })
+    .eq('id', movimientoId)
+    .select()
+
+  if (error) throw error
+  return data[0]
+}
+
+/**
+ * Elimina un gasto. El trigger de periodo cerrado bloquea el borrado (Regla R5).
+ * @param {string} movimientoId
+ */
+export async function eliminarGasto(movimientoId) {
+  const supabase = getSupabase()
+  const { error } = await supabase.from('movimientos').delete().eq('id', movimientoId)
+
+  if (error) throw error
 }
 
 /**

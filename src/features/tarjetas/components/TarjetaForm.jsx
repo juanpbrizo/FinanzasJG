@@ -5,13 +5,17 @@ import Input from '../../../components/ui/Input'
 /**
  * TarjetaForm: Formulario para crear/editar tarjeta de crédito.
  * Campos: nombre, limite_total, dia_cierre, dia_vencimiento.
+ *
+ * El estado inicial se toma de `tarjetaInicial` al montar. Para reutilizarlo
+ * con otra tarjeta hay que remontarlo (prop `key`), como hace TarjetasPage.
  */
-export default function TarjetaForm({ tarjetaInicial, onSubmit, isLoading }) {
+export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoading }) {
   const [nombre, setNombre] = useState(tarjetaInicial?.nombre || '')
   const [limitTotal, setLimitTotal] = useState(tarjetaInicial?.limite_total || '')
   const [diaCierre, setDiaCierre] = useState(tarjetaInicial?.dia_cierre || '')
   const [diaVencimiento, setDiaVencimiento] = useState(tarjetaInicial?.dia_vencimiento || '')
   const [error, setError] = useState('')
+  const esEdicion = Boolean(tarjetaInicial)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -42,10 +46,12 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, isLoading }) {
         dia_cierre: diaCierreNum,
         dia_vencimiento: diaVencimientoNum,
       })
-      setNombre('')
-      setLimitTotal('')
-      setDiaCierre('')
-      setDiaVencimiento('')
+      if (!esEdicion) {
+        setNombre('')
+        setLimitTotal('')
+        setDiaCierre('')
+        setDiaVencimiento('')
+      }
     } catch (err) {
       setError(err.message || 'Error al guardar la tarjeta')
     }
@@ -102,9 +108,16 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, isLoading }) {
 
       {error && <div className="rounded bg-red-50 p-2 text-sm text-red-700">{error}</div>}
 
-      <Button type="submit" disabled={isLoading} className="w-full">
-        {isLoading ? 'Guardando...' : 'Guardar tarjeta'}
-      </Button>
+      <div className="flex gap-2">
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel} className="w-full">
+            Cancelar
+          </Button>
+        ) : null}
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Guardar tarjeta'}
+        </Button>
+      </div>
     </form>
   )
 }

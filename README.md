@@ -27,7 +27,8 @@ La aplicación está optimizada para dispositivos móviles con:
 - Ingresos del periodo (crear, editar, eliminar)
 - Fondos y categorias de plantilla (`/configuracion`)
 - Sincronizacion de plantilla hacia el mes activo
-- Registro de gastos por categoria con **selector en cascada Fondo → Categoría**
+- Registro de gastos por categoria con **selector en cascada Fondo → Categoria**
+- **Edicion y eliminacion de gastos** de cualquier periodo abierto, desde el detalle de cada fondo
 - Transferencias entre fondos
 - Cierre de mes
 - Tarjetas de credito y compras en cuotas
@@ -103,6 +104,23 @@ Para este estado del proyecto, aplicar en orden:
 14. `20260807000000_suscripciones_recurrentes.sql` - Suscripciones con liquidación automática
 15. `20260807000001_fix_suscripciones_default_usuario_id.sql` - RLS correction
 16. `20260807000002_fix_suscripciones_categoria_plantilla.sql` - Schema fix
+17. `20260807000003_editar_eliminar_movimientos.sql` - Bloqueo de DELETE en periodos cerrados
+
+### Detalle de gastos por fondo
+
+En la vista del mes, la etiqueta de tipo de cada fondo (esquina superior derecha de
+la tarjeta) es un boton: abre un modal con los gastos de ese fondo en el mes activo,
+con acciones de editar y eliminar. No hay una lista global de gastos apilada al pie
+de la pantalla.
+
+- Las ediciones y borrados solo se permiten mientras el periodo no este `cerrado`
+  (Regla R5). La policy `movimientos propios` es `FOR ALL`, asi que el control real
+  lo hace el trigger `tr_bloquear_cambios_movimientos_cerrado`, extendido a DELETE
+  en la migracion 17.
+- Las cuotas de tarjeta se listan con su badge `Cuota n/N` pero no se editan ahi:
+  su flujo vive en `/tarjetas` para no romper la trazabilidad del plan de pagos.
+- Al guardar o eliminar se invalidan `resumen`, `fondos` y `movimientos_periodo`,
+  por lo que la barra de progreso del fondo se recalcula al instante.
 
 ### Características de las suscripciones
 
@@ -147,12 +165,20 @@ liquidan automaticamente por periodo al inicializar o sincronizar el mes.
   - Vista de Analítica configurada como pantalla principal (ruta index `/` redirije a `/analytics`)
   - Reorganizada navegación con 5 items: Analítica, Mes, Tarjetas, Suscripciones, Configuración
   - Bottom navigation mobile optimizado a grid-cols-5
+- **Gastos editables y eliminables** en periodos abiertos, con confirmacion previa al borrado
+  y trigger SQL que ahora tambien bloquea DELETE sobre periodos cerrados.
+- **Fix de los botones "Editar"** en Tarjetas y Suscripciones: los formularios inicializaban
+  su estado solo al montar, asi que al editar no se precargaban los datos. Ahora la edicion
+  ocurre en un modal con `key` por entidad, que fuerza el remontaje del formulario.
+- Fix en `actualizarSuscripcion`: la lista blanca de campos omitia `tarjeta_id` y
+  `categoria_plantilla_id`, por lo que esos cambios se descartaban en silencio.
 - `npm run verify` pasa limpio con lint + build.
 
 ## Estructura (resumen)
 
 - `src/features/presupuesto`: presupuesto mensual, ingresos y fondos
 - `src/features/tarjetas`: tarjetas y cuotas
+- `src/features/suscripciones`: suscripciones recurrentes
 - `src/features/configuracion`: plantilla de fondos y categorias
 - `src/components/ui`: componentes base reutilizables
 - `supabase/migrations`: versionado de esquema y logica SQL

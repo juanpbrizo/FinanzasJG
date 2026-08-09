@@ -6,21 +6,26 @@ const FRECUENCIAS = ['MENSUAL', 'BIMESTRAL', 'TRIMESTRAL', 'SEMESTRAL', 'ANUAL']
 
 /**
  * SuscripcionesForm: Formulario para crear/editar suscripciones.
+ *
+ * El estado se inicializa al montar, asi que en edicion hay que pasarle un
+ * `key` distinto por suscripcion para que se remonte y precargue los valores.
  */
 export default function SuscripcionesForm({
   tarjetas,
   categorias,
   suscripcionInicial,
   onSubmit,
+  onCancel,
   isLoading,
 }) {
+  const esEdicion = Boolean(suscripcionInicial)
   const [nombre, setNombre] = useState(suscripcionInicial?.nombre || '')
-  const [monto, setMonto] = useState(suscripcionInicial?.monto || '')
+  const [monto, setMonto] = useState(suscripcionInicial?.monto ?? '')
   const [tarjetaId, setTarjetaId] = useState(suscripcionInicial?.tarjeta_id || '')
   const [categoriaId, setCategoriaId] = useState(suscripcionInicial?.categoria_plantilla_id || '')
   const [frecuencia, setFrecuencia] = useState(suscripcionInicial?.frecuencia || 'MENSUAL')
-  const [mesCobro, setMesCobro] = useState(suscripcionInicial?.mes_cobro_anual || '')
-  const [diaVencimiento, setDiaVencimiento] = useState(suscripcionInicial?.dia_vencimiento || '1')
+  const [mesCobro, setMesCobro] = useState(suscripcionInicial?.mes_cobro_anual ?? '')
+  const [diaVencimiento, setDiaVencimiento] = useState(suscripcionInicial?.dia_vencimiento ?? '1')
   const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
@@ -68,10 +73,10 @@ export default function SuscripcionesForm({
         dia_vencimiento: parseInt(diaVencimiento, 10),
       }
 
-      await onSubmit(suscripcionInicial?.id ? { suscripcionId: suscripcionInicial.id, payload } : payload)
+      await onSubmit(payload)
 
       // Limpia el formulario si es creación
-      if (!suscripcionInicial) {
+      if (!esEdicion) {
         setNombre('')
         setMonto('')
         setTarjetaId('')
@@ -191,15 +196,22 @@ export default function SuscripcionesForm({
 
       {error && <div className="rounded bg-red-50 p-2 text-sm text-red-700">{error}</div>}
 
-      <Button type="submit" disabled={isLoading} className="w-full">
-        {isLoading
-          ? suscripcionInicial
-            ? 'Actualizando...'
-            : 'Creando...'
-          : suscripcionInicial
-            ? 'Actualizar suscripción'
-            : 'Crear suscripción'}
-      </Button>
+      <div className="flex gap-2">
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} className="w-full">
+            Cancelar
+          </Button>
+        )}
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading
+            ? esEdicion
+              ? 'Actualizando...'
+              : 'Creando...'
+            : esEdicion
+              ? 'Guardar cambios'
+              : 'Crear suscripción'}
+        </Button>
+      </div>
     </form>
   )
 }

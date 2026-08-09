@@ -11,6 +11,7 @@ import InitializeModal from './components/InitializeModal'
 import SummaryCards from './components/SummaryCards'
 import FondosList from './components/FondosList'
 import CreateGastoModal from './components/CreateGastoModal'
+import DetalleGastosFondoModal from './components/DetalleGastosFondoModal'
 import CreateIngresoModal from './components/CreateIngresoModal'
 import IngresosDelMesPanel from './components/IngresosDelMesPanel'
 import DineroSinAsignarWidget from './components/DineroSinAsignarWidget'
@@ -25,6 +26,8 @@ import {
   useSincronizarFondos,
   useActualizarFondoMensual,
   useCrearGasto,
+  useActualizarGasto,
+  useEliminarGasto,
   useCrearIngreso,
   useActualizarIngreso,
   useEliminarIngreso,
@@ -37,6 +40,8 @@ export default function MesPage() {
   const [showIngresoModal, setShowIngresoModal] = useState(false)
   const [showHistorial, setShowHistorial] = useState(false)
   const [editingIngreso, setEditingIngreso] = useState(null)
+  const [editingGasto, setEditingGasto] = useState(null)
+  const [fondoDetalleId, setFondoDetalleId] = useState(null)
   const [toast, setToast] = useState(null)
 
   // Hooks SIEMPRE llamados, independientemente de validaciones.
@@ -48,6 +53,8 @@ export default function MesPage() {
   const sincronizarFondos = useSincronizarFondos()
   const actualizarFondo = useActualizarFondoMensual()
   const crearGasto = useCrearGasto()
+  const actualizarGasto = useActualizarGasto()
+  const eliminarGasto = useEliminarGasto()
   const crearIngreso = useCrearIngreso()
   const actualizarIngreso = useActualizarIngreso()
   const eliminarIngreso = useEliminarIngreso()
@@ -57,6 +64,8 @@ export default function MesPage() {
   }
 
   const estaCerrado = periodoData?.estado === 'cerrado'
+  // Se deriva del listado para que el detalle se refresque tras editar/eliminar.
+  const fondoDetalle = fondos?.find((f) => f.id === fondoDetalleId) ?? null
 
   const handleInitialize = async () => {
     try {
@@ -97,6 +106,61 @@ export default function MesPage() {
           : (error?.message ?? 'No se pudo registrar el gasto'),
       })
       return false
+    }
+  }
+
+  const handleActualizarGasto = async (gastoData) => {
+    if (estaCerrado) {
+      setToast({
+        variant: 'error',
+        message: 'El período está cerrado: no se pueden editar gastos.',
+      })
+      return false
+    }
+
+    try {
+      await actualizarGasto.mutateAsync({ movimientoId: editingGasto.id, payload: gastoData })
+      setShowGastoModal(false)
+      setEditingGasto(null)
+      setToast({ variant: 'success', message: 'Gasto actualizado correctamente' })
+      return true
+    } catch (error) {
+      console.error('Error al actualizar gasto:', error?.message, error)
+      setToast({
+        variant: 'error',
+        message: error?.message ?? 'No se pudo actualizar el gasto',
+      })
+      return false
+    }
+  }
+
+  const handleEditarGasto = (gasto) => {
+    // Se cierra el detalle del fondo para no apilar dos modales.
+    setFondoDetalleId(null)
+    setEditingGasto(gasto)
+    setShowGastoModal(true)
+  }
+
+  const handleEliminarGasto = async (gasto) => {
+    if (estaCerrado) {
+      setToast({
+        variant: 'error',
+        message: 'El período está cerrado: no se pueden eliminar gastos.',
+      })
+      return
+    }
+    if (!window.confirm(`¿Eliminar el gasto "${gasto.descripcion}"? Esta acción no se puede deshacer.`))
+      return
+
+    try {
+      await eliminarGasto.mutateAsync(gasto.id)
+      setToast({ variant: 'success', message: 'Gasto eliminado correctamente' })
+    } catch (error) {
+      console.error('Error al eliminar gasto:', error?.message, error)
+      setToast({
+        variant: 'error',
+        message: error?.message ?? 'No se pudo eliminar el gasto',
+      })
     }
   }
 
@@ -294,7 +358,10 @@ export default function MesPage() {
 
           {/* Boton flotante para crear gasto */}
           <button
-            onClick={() => setShowGastoModal(true)}
+            onClick={() => {
+              setEditingGasto(null)
+              setShowGastoModal(true)
+            }}
             disabled={periodoData?.estado === 'cerrado'}
             className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-xl text-white shadow-lg hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
             title={periodoData?.estado === 'cerrado' ? 'Período cerrado' : 'Crear gasto'}
@@ -308,18 +375,45 @@ export default function MesPage() {
             <FondosList
               fondos={fondos}
               onUpdatePresupuesto={handleActualizarPresupuesto}
+              onVerGastos={(fondo) => setFondoDetalleId(fondo.id)}
               isLocked={estaCerrado}
               isSaving={actualizarFondo.isPending}
             />
           </div>
 
           {/* Modales y Drawers */}
+          {fondoDetalle && (
+            <DetalleGastosFondoModal
+              fondo={fondoDetalle}
+              onClose={() => setFondoDetalleId(null)}
+              onEdit={handleEditarGasto}
+              onDelete={handleEliminarGasto}
+              isLocked={estaCerrado}
+              isDisabled={actualizarGasto.isPending || eliminarGasto.isPending}
+            />
+          )}
           <CreateGastoModal
+            key={editingGasto?.id ?? 'nuevo-gasto'}
             isOpen={showGastoModal}
-            onClose={() => setShowGastoModal(false)}
-            onSubmit={handleCrearGasto}
+            onClose={() => {
+              setShowGastoModal(false)
+              setEditingGasto(null)
+            }}
+            onSubmit={editingGasto ? handleActualizarGasto : handleCrearGasto}
             fondos={fondos}
-            isLoading={crearGasto.isPending}
+            isLoading={crearGasto.isPending || actualizarGasto.isPending}
+            initialData={
+              editingGasto
+                ? {
+                    monto: String(editingGasto.monto ?? ''),
+                    descripcion: editingGasto.descripcion ?? '',
+                    fecha_transaccion: editingGasto.fecha_transaccion,
+                    fondo_id: editingGasto.fondo_id,
+                    categoria_mensual_id: editingGasto.categoria_mensual_id,
+                    medio_pago: editingGasto.medio_pago,
+                  }
+                : null
+            }
           />
 
           <CreateIngresoModal

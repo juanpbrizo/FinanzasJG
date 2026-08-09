@@ -147,6 +147,39 @@ export function useCrearGasto() {
 }
 
 /**
+ * Edita un gasto existente.
+ * Invalida resumen, fondos y movimientos: cambia el gasto del fondo y el total del mes.
+ */
+export function useActualizarGasto() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ movimientoId, payload }) => api.actualizarGasto(movimientoId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resumen'] })
+      queryClient.invalidateQueries({ queryKey: ['fondos'] })
+      queryClient.invalidateQueries({ queryKey: ['movimientos_periodo'] })
+    },
+  })
+}
+
+/**
+ * Elimina un gasto, reintegrando su monto al disponible del fondo.
+ */
+export function useEliminarGasto() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: api.eliminarGasto,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resumen'] })
+      queryClient.invalidateQueries({ queryKey: ['fondos'] })
+      queryClient.invalidateQueries({ queryKey: ['movimientos_periodo'] })
+    },
+  })
+}
+
+/**
  * Crea un fondo en la plantilla.
  * Invalida la lista de fondos plantilla.
  */

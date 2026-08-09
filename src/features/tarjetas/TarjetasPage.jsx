@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Spinner from '../../components/ui/Spinner'
+import Modal from '../../components/ui/Modal'
 import TarjetaForm from './components/TarjetaForm'
 import TarjetasList from './components/TarjetasList'
 import CompraCuotasForm from './components/CompraCuotasForm'
@@ -102,16 +103,12 @@ export default function TarjetasPage() {
         <h2 className="mb-4 text-xl sm:text-2xl font-bold text-slate-900">Mis Tarjetas de Crédito</h2>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Formulario de crear/editar */}
+          {/* Formulario de alta */}
           <div>
             <h3 className="mb-3 text-base sm:text-lg font-semibold text-slate-900">
-              {tarjetaEnEdicion ? 'Editar tarjeta' : 'Agregar nueva tarjeta'}
+              Agregar nueva tarjeta
             </h3>
-            <TarjetaForm
-              tarjetaInicial={tarjetaEnEdicion}
-              onSubmit={tarjetaEnEdicion ? handleActualizarTarjeta : handleCrearTarjeta}
-              isLoading={crearTarjeta.isPending || actualizarTarjeta.isPending}
-            />
+            <TarjetaForm onSubmit={handleCrearTarjeta} isLoading={crearTarjeta.isPending} />
           </div>
 
           {/* Lista de tarjetas */}
@@ -127,6 +124,22 @@ export default function TarjetasPage() {
           </div>
         </div>
       </section>
+
+      {/* Modal de edición de tarjeta */}
+      <Modal
+        isOpen={Boolean(tarjetaEnEdicion)}
+        onClose={() => setTarjetaEnEdicion(null)}
+        title="Editar tarjeta"
+      >
+        {/* `key` remonta el form para que precargue los datos de la tarjeta elegida */}
+        <TarjetaForm
+          key={tarjetaEnEdicion?.id}
+          tarjetaInicial={tarjetaEnEdicion}
+          onSubmit={handleActualizarTarjeta}
+          onCancel={() => setTarjetaEnEdicion(null)}
+          isLoading={actualizarTarjeta.isPending}
+        />
+      </Modal>
 
       {/* Sección: Compras en Cuotas */}
       <section>

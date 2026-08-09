@@ -2,14 +2,27 @@ import { useState, useMemo } from 'react'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 
-export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, isLoading }) {
+/**
+ * Modal de alta y edicion de gastos.
+ * En modo edicion recibe `initialData`; como el estado se inicializa al montar,
+ * quien lo use debe pasarle un `key` distinto por gasto para que precargue.
+ */
+export default function CreateGastoModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  fondos,
+  isLoading,
+  initialData = null,
+}) {
+  const esEdicion = Boolean(initialData)
   const [formData, setFormData] = useState({
-    monto: '',
-    descripcion: '',
-    fecha_transaccion: new Date().toISOString().split('T')[0],
-    fondo_id: '',
-    categoria_mensual_id: '',
-    medio_pago: 'efectivo',
+    monto: initialData?.monto ?? '',
+    descripcion: initialData?.descripcion ?? '',
+    fecha_transaccion: initialData?.fecha_transaccion ?? new Date().toISOString().split('T')[0],
+    fondo_id: initialData?.fondo_id ?? '',
+    categoria_mensual_id: initialData?.categoria_mensual_id ?? '',
+    medio_pago: initialData?.medio_pago ?? 'efectivo',
   })
 
   // Categorías filtradas según fondo seleccionado
@@ -37,7 +50,7 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, is
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const creado = await onSubmit({
+    const guardado = await onSubmit({
       monto: parseFloat(formData.monto),
       descripcion: formData.descripcion,
       fecha_transaccion: formData.fecha_transaccion,
@@ -45,7 +58,7 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, is
       medio_pago: formData.medio_pago,
     })
     // Si el guardado falla se conservan los datos para reintentar.
-    if (creado === false) return
+    if (guardado === false || esEdicion) return
     setFormData({
       monto: '',
       descripcion: '',
@@ -59,7 +72,9 @@ export default function CreateGastoModal({ isOpen, onClose, onSubmit, fondos, is
   return (
     <div className="fixed inset-0 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4 z-50">
       <div className="w-full max-w-md rounded-t-2xl sm:rounded-lg bg-white p-4 sm:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold text-slate-900">Registrar Gasto</h3>
+        <h3 className="text-lg font-semibold text-slate-900">
+          {esEdicion ? 'Editar Gasto' : 'Registrar Gasto'}
+        </h3>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <Input
