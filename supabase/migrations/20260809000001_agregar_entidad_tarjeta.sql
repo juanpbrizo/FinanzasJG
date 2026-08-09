@@ -1,4 +1,4 @@
--- Agregar columna entidad a tarjetas_credito
+-- Agregar columna entidad a tarjetas_credito (idempotente)
 -- Permite seleccionar el banco/billetera virtual emisor
 
 alter table public.tarjetas_credito
