@@ -45,17 +45,17 @@ function AmexLogo({ className = 'h-8 w-12' }) {
 export function BrandLogo({ marca, className = 'h-8 w-12' }) {
   const { logoColor } = getCardStyle(marca)
 
-  const brandUpper = marca?.toUpperCase()
+  const brandLower = marca?.toLowerCase()
 
-  if (brandUpper === 'VISA') {
+  if (brandLower === 'visa') {
     return <VisaLogo className={`${className} ${logoColor}`} />
   }
 
-  if (brandUpper === 'MASTERCARD') {
+  if (brandLower === 'mastercard') {
     return <MastercardLogo className={`${className} ${logoColor}`} />
   }
 
-  if (brandUpper === 'AMEX') {
+  if (brandLower === 'amex') {
     return <AmexLogo className={`${className} ${logoColor}`} />
   }
 

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
+import { getEntidadesOptions, getMarcasOptions } from '../../../constants/tarjetasThemes'
 
 /**
  * TarjetaForm: Formulario para crear/editar tarjeta de crédito.
- * Campos: nombre, limite_total, dia_cierre, dia_vencimiento, marca.
+ * Campos: nombre, limite_total, dia_cierre, dia_vencimiento, entidad, marca.
  *
  * El estado inicial se toma de `tarjetaInicial` al montar. Para reutilizarlo
  * con otra tarjeta hay que remontarlo (prop `key`), como hace TarjetasPage.
@@ -14,7 +15,8 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoad
   const [limitTotal, setLimitTotal] = useState(tarjetaInicial?.limite_total || '')
   const [diaCierre, setDiaCierre] = useState(tarjetaInicial?.dia_cierre || '')
   const [diaVencimiento, setDiaVencimiento] = useState(tarjetaInicial?.dia_vencimiento || '')
-  const [marca, setMarca] = useState(tarjetaInicial?.marca || 'OTRA')
+  const [entidad, setEntidad] = useState(tarjetaInicial?.entidad || 'santander')
+  const [marca, setMarca] = useState(tarjetaInicial?.marca || 'visa')
   const [error, setError] = useState('')
   const esEdicion = Boolean(tarjetaInicial)
 
@@ -46,6 +48,7 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoad
         limite_total: parseFloat(limitTotal),
         dia_cierre: diaCierreNum,
         dia_vencimiento: diaVencimientoNum,
+        entidad,
         marca,
       })
       if (!esEdicion) {
@@ -53,7 +56,8 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoad
         setLimitTotal('')
         setDiaCierre('')
         setDiaVencimiento('')
-        setMarca('OTRA')
+        setEntidad('santander')
+        setMarca('visa')
       }
     } catch (err) {
       setError(err.message || 'Error al guardar la tarjeta')
@@ -109,18 +113,36 @@ export default function TarjetaForm({ tarjetaInicial, onSubmit, onCancel, isLoad
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-900">Marca de tarjeta</label>
-        <select
-          value={marca}
-          onChange={(e) => setMarca(e.target.value)}
-          className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-        >
-          <option value="VISA">Visa</option>
-          <option value="MASTERCARD">Mastercard</option>
-          <option value="AMEX">American Express</option>
-          <option value="OTRA">Otra</option>
-        </select>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-900">Banco/Billetera</label>
+          <select
+            value={entidad}
+            onChange={(e) => setEntidad(e.target.value)}
+            className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+          >
+            {getEntidadesOptions().map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-900">Marca/Red de Pago</label>
+          <select
+            value={marca}
+            onChange={(e) => setMarca(e.target.value)}
+            className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 placeholder-slate-500 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+          >
+            {getMarcasOptions().map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {error && <div className="rounded bg-red-50 p-2 text-sm text-red-700">{error}</div>}
